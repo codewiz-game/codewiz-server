@@ -1,0 +1,62 @@
+<html>
+	<head>
+		<title>Register</title>
+		<script type="text/javascript" src="resources/libs/jquery-2.2.4.min.js"></script>
+		<script type="text/javascript">
+			function validate() {
+				var username = $("username-field").text();
+				var password = $("password-field").text();
+				var email = $("email-field").text();
+				return true;
+			}
+		</script>
+	</head>
+
+	<body>
+		<form id="registration-form" onsubmit="javascript:validate()" action="{{.SubmitPath}}" method="post">
+			<div>
+				<label for="username-field">Username: </label>
+				<input id="username-field" name="username" type="text" />
+				{{with $usernameErrors := index .FieldErrors "username"}}
+					{{if $usernameErrors }}
+						<ul id="username-errors">
+							{{range $index, $error := $usernameErrors }}
+								<li> {{$error}} </li>
+							{{end}}
+						</ul>
+					{{end}}
+				{{end}}
+			</div>
+			<div>
+				<label for="password-field">Password: </label>
+				<input id="password-field" name="password" type="password" />
+				{{with $passwordErrors := index .FieldErrors "password"}}
+					{{if $passwordErrors }}
+						<ul id="password-errors">
+							{{range $index, $error := $passwordErrors }}
+								<li> {{$error}} </li>
+							{{end}}
+						</ul>
+					{{end}}
+				{{end}}
+				<input type="button"></input> <!-- TODO: change to an eye glyphicon -->
+			</div>
+			<div>
+				<label for="email-field">Username: </label>
+				<input id="email-field" name="email" type="email" />
+				{{with $emailErrors := index .FieldErrors "email"}}
+					{{if $emailErrors }}
+						<ul id="email-errors">
+							{{range $index, $error := $emailErrors }}
+								<li> {{$error}} </li>
+							{{end}}
+						</ul>
+					{{end}}
+				{{end}}
+			</div>
+			<div>
+				<input type="submit" value="Submit" />
+			</div>
+		</form>
+	</body>
+</html>
