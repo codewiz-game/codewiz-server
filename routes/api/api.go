@@ -19,7 +19,7 @@ func Handler() http.Handler {
 
 	// Add version one
 	v1Path := fmt.Sprintf(versionPathFormat, 1)
-	v1Router := router.Handle(v1Path, v1.Handler()).Subrouter()
+	v1Router := router.Handle(v1Path, v1.Router()).Subrouter()
 
 	// ----------------------------------------------------------------
 	// NOTE: new versions can be added here

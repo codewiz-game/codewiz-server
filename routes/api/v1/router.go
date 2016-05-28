@@ -13,6 +13,6 @@ func init() {
 	addWizardRoutes()	
 }
 
-func Handler() http.Handler {
+func Router() http.Handler {
 	return router
 }
