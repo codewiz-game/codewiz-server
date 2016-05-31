@@ -2,43 +2,33 @@ package main
 
 import (
 	"net/http"
-	"database/sql"
-	"github.com/gorilla/mux"
+	"github.com/crob1140/codewiz/routes"
 	"github.com/crob1140/codewiz/routes/api"
 	"github.com/crob1140/codewiz/routes/views"
 	"github.com/crob1140/codewiz/datastore"
 	"github.com/crob1140/codewiz/models"
+)
 
-
-	_ "github.com/mattn/go-sqlite3"
+const (
+	apiPath = "/api"
+	viewsPath = "/"
 )
 
 type CodewizServer struct {
-	*mux.Router
+	Router http.Handler
 }
 
-func NewServer() *CodewizServer {
-
-	// TODO: read from config file to build a Configuration (which should really just be environment variables)
-
-	// TODO: this should be the constructor for UserDao
-	db, err := sql.Open("sqlite3", ":memory:")
-	if err != nil {
-		panic(err)
-	}
-
-	ds := datastore.NewDataStore(db, datastore.SqliteDialect)
+func NewServer(ds *datastore.SQLDataStore) *CodewizServer {
 	userDao := models.NewUserDao(ds)
+	router := routes.NewRouter()
 
-	router := mux.NewRouter()	
-	viewrouter := views.NewRouter(userDao)
-	router.PathPrefix("/").Handler(viewrouter)
+	// Add API endpoints
+	apiRouter := api.NewRouter()
+	router.AddSubrouter(apiPath, apiRouter)
 
-/**
-	apirouter := api.Router{UserDao : userDao, WizardDao : wizardDao} etc.
-	router.Path("/api/").Handler(apirouter)
-*/
-	api.AddRoutes(router)
+	// Add view endpoints
+	viewsRouter := views.NewRouter(userDao)
+	router.AddSubrouter(viewsPath, viewsRouter)
 
 	return &CodewizServer{Router : router}
 }

@@ -17,7 +17,7 @@ func NewUserDao(dataStore *datastore.SQLDataStore) *UserDao {
 	return &UserDao{DataStore : dataStore}
 }
 
-func NewUser(username string) *User {
+func NewUser(username string, password string, email string) *User {
 	return &User{Username : username}
 }
 

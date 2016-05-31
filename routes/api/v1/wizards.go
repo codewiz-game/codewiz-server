@@ -1,13 +1,13 @@
 package v1
 
 import (
+	"log"
 	"net/http"
 	"github.com/crob1140/codewiz/routes"
 )
 
-var (
-	GetWizard routes.Route
-	AddWizard routes.Route
+const (
+	wizardsPath = "/wizards"
 )
 
 type Spell struct {
@@ -19,18 +19,27 @@ type Wizard struct {
 	Spells []Spell `json:"spells"`
 }
 
-func addWizardRoutes() {
-	wizardRouter := router.PathPrefix("/wizards/").Subrouter()
-	GetWizard = wizardRouter.HandleFunc("/", getWizardHandler).Methods("GET")
-	AddWizard = wizardRouter.HandleFunc("/", addWizardHandler).Methods("POST")
+func addWizardRoutes(router *routes.Router) {
+	router.HandleFunc(wizardsPath, getAllWizardsHandler).Methods("GET")
+	router.HandleFunc(wizardsPath, addWizardHandler).Methods("POST")
+
+	router.HandleFunc(wizardsPath + "/{id}", getWizardHandler).Methods("GET")
+	router.HandleFunc(wizardsPath + "/{id}", modifyWizardHandler).Methods("POST")
 }
 
-
-func getWizardHandler(w http.ResponseWriter, r *http.Request) {
-	
+func getAllWizardsHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Get all wizards v1")
 }
 
 
 func addWizardHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Add wizard v1")
+}
 
+func getWizardHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Get wizard v1")
+}
+
+func modifyWizardHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Modify wizard v1")
 }

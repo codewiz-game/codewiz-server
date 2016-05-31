@@ -47,7 +47,7 @@ func initTestDataStore() (*SQLDataStore, error) {
 		return nil, err
 	}
 
-	ds := NewDataStore(db, SqliteDialect)
+	ds := NewDataStore(db, "sqlite3")
 	ds.AddTableWithName(testRecord{}, "Test")
 	return ds, nil
 }

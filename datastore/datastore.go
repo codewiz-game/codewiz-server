@@ -3,7 +3,6 @@ package datastore
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 	"github.com/go-gorp/gorp"
 	"reflect"
 	"strings"
@@ -28,28 +27,22 @@ type SQLDataStore struct {
 	meta map[reflect.Type]metaMap
 }
 
-func NewDataStore(db *sql.DB, dialect Dialect) *SQLDataStore {
-	var gorpDialect gorp.Dialect
-	switch dialect {
-	case MySQLDialect:
-		gorpDialect = gorp.MySQLDialect{}
-	case SqliteDialect:
-		gorpDialect = gorp.SqliteDialect{}
-	}
-	
+func NewDatastore(db *sql.DB, driverName string) *SQLDataStore {
+	gorpDialect := getDialectForDriver(driverName)
 	dbMap := &gorp.DbMap{Db: db, Dialect : gorpDialect}
 	return &SQLDataStore{DbMap: dbMap, meta: make(map[reflect.Type]metaMap)}
 }
 
-func ParseDialect(dialectName string) (Dialect, error) {
-	switch dialectName {
-	case "mysql":
-		return MySQLDialect, nil
+func getDialectForDriver(driverName string) gorp.Dialect {
+	var gorpDialect gorp.Dialect
+	switch driverName {
 	case "sqlite3":
-		return SqliteDialect, nil
+		gorpDialect = gorp.SqliteDialect{}
 	default:
-		return UnsupportedDialect, fmt.Errorf("Dialect [%s] is not supported.", dialectName)
+		gorpDialect = gorp.MySQLDialect{}	
 	}
+
+	return gorpDialect
 }
 
 func (ds *SQLDataStore) AddTableWithName(model interface{}, name string) {

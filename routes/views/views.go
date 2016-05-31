@@ -2,6 +2,7 @@ package views
 
 import (
 	"encoding/gob"
+	"net/url"
 	"net/http"
 	"path/filepath"
 	"github.com/gorilla/mux"
@@ -13,66 +14,44 @@ import (
 
 const (
 	resourceDirectory = "routes/views/resources"
+	TemplateDirectory = resourceDirectory + "/templates"
 	sessionName = "codewiz-session"
 	secondsPerHour = 3600
 )
 
 type handler struct {
-	router *Router
-	handlerFunc func(http.ResponseWriter, *http.Request, *sessions.Session, *Router)
+	router *viewsRouter
+	handlerFunc func(http.ResponseWriter, *http.Request, *sessions.Session, *viewsRouter)
 }
 
-type Router struct {
-	muxRouter *mux.Router
+type viewsRouter struct {
+	*routes.Router
+
 	sessionStore sessions.Store
 	userDao *models.UserDao
 
-	HomePage routes.Route
-	Dashboard routes.Route
-	Registration routes.Route
-	Login routes.Route
+	// TODO: replace all with just URL's? only ever used for redirection
+	homePageRoute *mux.Route
+	dashboardRoute *mux.Route
+	registrationRoute *mux.Route
+	loginRoute *mux.Route
 
 	// The following routes should not be exported, 
 	// since they should only be accessed through
 	// actions made on the views
-	registrationSubmit routes.Route
+	registrationSubmitRoute *mux.Route
 }
 
-func init() {
+// ----------------------------------------------------------------------
+// 404 Customisation
+// ----------------------------------------------------------------------
 
-	// Register all of the types that will be stored as session values
-	// to allow them to be encoded to the session cookie
-	gob.Register(map[string][]string{})
+type custom404Handler struct {}
+func (*custom404Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	render(w, "404.html", nil)
 }
 
-func createHandler(handlerFunc func(http.ResponseWriter, *http.Request, *sessions.Session, *Router), router *Router) *handler {
-	return &handler{router : router, handlerFunc : handlerFunc}
-}
-
-func NewRouter(userDao *models.UserDao) http.Handler {
-	// Initialise the session store with the necessary keys
-	sessionStore := sessions.NewCookieStore([]byte("top-secret-keks"))
-	router := &Router{muxRouter : mux.NewRouter(), userDao : userDao, sessionStore : sessionStore}
-	initRoutes(router)
-	return router
-}
-
-func initRoutes(router *Router) {
-	// Set static resource directory
-	resourceHandler := http.StripPrefix("/resources", http.FileServer(http.Dir(resourceDirectory)))
-	router.muxRouter.PathPrefix("/resources").Handler(resourceHandler)
-
-	// Add dashboard page
-	router.HomePage = router.muxRouter.Path("/").Handler(createHandler(dashboardPageHandler, router)).Methods("GET")
-	router.Dashboard = router.muxRouter.Path("/dashboard").Handler(createHandler(dashboardPageHandler, router)).Methods("GET")
-	
-	// Add registration page
-	router.Registration = router.muxRouter.Path("/register").Handler(createHandler(registerPageHandler, router)).Methods("GET")
-	router.registrationSubmit = router.muxRouter.Path("/register").Handler(createHandler(registerActionHandler, router)).Methods("POST")
-	
-	// Add login page
-	router.Login = router.muxRouter.Path("/login").Handler(createHandler(loginPageHandler, router)).Methods("GET")
-}
+// ----------------------------------------------------------------------
 
 // This method performs all of the common code and passes down the
 // frequently used components to the handlers.
@@ -95,12 +74,49 @@ func (handler *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	handler.handlerFunc(w, r, session, handler.router)
 }
 
-func (router *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	router.muxRouter.ServeHTTP(w,r)
+
+
+func init() {
+
+	// Register all of the types that will be stored as session values
+	// to allow them to be encoded to the session cookie
+	gob.Register(map[string][]string{})
 }
 
+func createHandler(handlerFunc func(http.ResponseWriter, *http.Request, *sessions.Session, *viewsRouter), router *viewsRouter) *handler {
+	return &handler{router : router, handlerFunc : handlerFunc}
+}
+
+func NewRouter(userDao *models.UserDao) http.Handler {
+
+	// Initialise the session store with the necessary keys
+	sessionStore := sessions.NewCookieStore([]byte("top-secret-keks")) // TODO: read this directly from config? make it another arg?
+	viewsRouter := &viewsRouter{Router : routes.NewRouter(), userDao : userDao, sessionStore : sessionStore}
+	viewsRouter.NotFoundHandler = &custom404Handler{}
+	initRoutes(viewsRouter)
+	return viewsRouter
+}
+
+func initRoutes(router *viewsRouter) {
+	// Set static resource directory
+	resourceHandler := http.StripPrefix("/resources", http.FileServer(http.Dir(resourceDirectory)))
+	router.PathPrefix("/resources").Handler(resourceHandler)
+
+	// Add dashboard page
+	router.homePageRoute = router.Path("/").Handler(createHandler(dashboardPageHandler, router)).Methods("GET")
+	router.dashboardRoute = router.Path("/dashboard").Handler(createHandler(dashboardPageHandler, router)).Methods("GET")
+	
+	// Add registration page
+	router.registrationRoute = router.Path("/register").Handler(createHandler(registerPageHandler, router)).Methods("GET")
+	router.registrationSubmitRoute = router.Path("/register").Handler(createHandler(registerActionHandler, router)).Methods("POST")
+	
+	// Add login page
+	router.loginRoute = router.Path("/login").Handler(createHandler(loginPageHandler, router)).Methods("GET")
+}
+
+
 func render(w http.ResponseWriter, templateName string, data interface{}) {
-	path, _ := filepath.Abs(resourceDirectory + "/templates/" + templateName)
+	path, _ := filepath.Abs(TemplateDirectory + "/" + templateName)
 	tmpl, _ := template.ParseFiles(path)
 	tmpl.Execute(w, data)
 }
@@ -132,7 +148,7 @@ func validateRegistrationRequest(r *http.Request) (*models.User, map[string][]st
 }
 
 
-func dashboardPageHandler(w http.ResponseWriter, r *http.Request, session *sessions.Session, router *Router) {
+func dashboardPageHandler(w http.ResponseWriter, r *http.Request, session *sessions.Session, router *viewsRouter) {
 	data := struct {
 		Username string
 	}{ session.Values["username"].(string) }
@@ -140,7 +156,7 @@ func dashboardPageHandler(w http.ResponseWriter, r *http.Request, session *sessi
 	render(w, "dashboard.html", data)
 }
 
-func registerPageHandler(w http.ResponseWriter, r *http.Request, session *sessions.Session, router *Router) {
+func registerPageHandler(w http.ResponseWriter, r *http.Request, session *sessions.Session, router *viewsRouter) {
 	// If the user is reaching this page after being 
 	// redirected due to a validation error, the errors
 	// be error messages stored in a flash message which
@@ -155,7 +171,7 @@ func registerPageHandler(w http.ResponseWriter, r *http.Request, session *sessio
 		errs = make(map[string][]string) 
 	}
 
-	registerUrl, _ := router.registrationSubmit.URL()
+	registerUrl := router.Registration()
 	data := struct {
 		SubmitPath string
 		FieldErrors map[string][]string
@@ -169,7 +185,7 @@ func registerPageHandler(w http.ResponseWriter, r *http.Request, session *sessio
 	render(w, "register.html", data)	
 }
 
-func registerActionHandler(w http.ResponseWriter, r *http.Request, session *sessions.Session, router *Router) {
+func registerActionHandler(w http.ResponseWriter, r *http.Request, session *sessions.Session, router *viewsRouter) {
 	
 	user, errs := validateRegistrationRequest(r)
 
@@ -188,7 +204,7 @@ func registerActionHandler(w http.ResponseWriter, r *http.Request, session *sess
 		}
 
 		// Redirect the user to the dashboard
-		dashboardUrl, _ := router.Dashboard.URL()
+		dashboardUrl := router.Dashboard()
 		http.Redirect(w, r, dashboardUrl.String(), http.StatusSeeOther)	
 	} else {
 		// Add the errors to a flash message so that we can access them
@@ -200,11 +216,26 @@ func registerActionHandler(w http.ResponseWriter, r *http.Request, session *sess
 		}
 
 		// Send the user back to the registration page
-		registerUrl, _ := router.Registration.URL()
+		registerUrl := router.Registration()
 		http.Redirect(w, r, registerUrl.String(), http.StatusSeeOther)	
 	}
 }
 
-func loginPageHandler(w http.ResponseWriter, r *http.Request, session *sessions.Session, router *Router) {
+func loginPageHandler(w http.ResponseWriter, r *http.Request, session *sessions.Session, router *viewsRouter) {
 
+}
+
+func (router *viewsRouter) Dashboard() *url.URL {
+	url, _ := router.dashboardRoute.URL()
+	return url
+}
+
+func (router *viewsRouter) Registration() *url.URL {
+	url, _ := router.registrationRoute.URL()
+	return url
+}
+
+func (router *viewsRouter) Login() *url.URL {
+	url, _ := router.loginRoute.URL()
+	return url
 }
