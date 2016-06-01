@@ -2,7 +2,7 @@ package main
 
 import (
 	"net/http"
-	"github.com/crob1140/codewiz/routes"
+	"github.com/gorilla/mux"
 	"github.com/crob1140/codewiz/routes/api"
 	"github.com/crob1140/codewiz/routes/views"
 	"github.com/crob1140/codewiz/datastore"
@@ -20,15 +20,15 @@ type CodewizServer struct {
 
 func NewServer(ds *datastore.SQLDataStore) *CodewizServer {
 	userDao := models.NewUserDao(ds)
-	router := routes.NewRouter()
+	router := mux.NewRouter()
 
 	// Add API endpoints
-	apiRouter := api.NewRouter()
-	router.AddSubrouter(apiPath, apiRouter)
+	apiRouter := api.NewRouter(apiPath)
+	router.PathPrefix(apiPath).Handler(apiRouter)
 
 	// Add view endpoints
-	viewsRouter := views.NewRouter(userDao)
-	router.AddSubrouter(viewsPath, viewsRouter)
+	viewsRouter := views.NewRouter(userDao, viewsPath)
+	router.PathPrefix(viewsPath).Handler(viewsRouter)
 
 	return &CodewizServer{Router : router}
 }

@@ -1,6 +1,7 @@
 package views
 
 import (
+	"path"
 	"encoding/gob"
 	"net/url"
 	"net/http"
@@ -8,7 +9,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
 	"github.com/crob1140/codewiz/models"
-	"github.com/crob1140/codewiz/routes"
 	"html/template"
 )
 
@@ -25,7 +25,7 @@ type handler struct {
 }
 
 type viewsRouter struct {
-	*routes.Router
+	*mux.Router
 
 	sessionStore sessions.Store
 	userDao *models.UserDao
@@ -87,31 +87,34 @@ func createHandler(handlerFunc func(http.ResponseWriter, *http.Request, *session
 	return &handler{router : router, handlerFunc : handlerFunc}
 }
 
-func NewRouter(userDao *models.UserDao) http.Handler {
+func NewRouter(userDao *models.UserDao, pathPrefixes ...string) http.Handler {
 
 	// Initialise the session store with the necessary keys
 	sessionStore := sessions.NewCookieStore([]byte("top-secret-keks")) // TODO: read this directly from config? make it another arg?
-	viewsRouter := &viewsRouter{Router : routes.NewRouter(), userDao : userDao, sessionStore : sessionStore}
+	viewsRouter := &viewsRouter{Router : mux.NewRouter(), userDao : userDao, sessionStore : sessionStore}
 	viewsRouter.NotFoundHandler = &custom404Handler{}
-	initRoutes(viewsRouter)
+	initRoutes(viewsRouter, pathPrefixes...)
 	return viewsRouter
 }
 
-func initRoutes(router *viewsRouter) {
+func initRoutes(router *viewsRouter, pathPrefixes ...string) {
+
+	pathPrefix := path.Join(pathPrefixes...)
+
 	// Set static resource directory
 	resourceHandler := http.StripPrefix("/resources", http.FileServer(http.Dir(resourceDirectory)))
-	router.PathPrefix("/resources").Handler(resourceHandler)
+	router.PathPrefix(path.Join(pathPrefix, "/resources")).Handler(resourceHandler)
 
 	// Add dashboard page
-	router.homePageRoute = router.Path("/").Handler(createHandler(dashboardPageHandler, router)).Methods("GET")
-	router.dashboardRoute = router.Path("/dashboard").Handler(createHandler(dashboardPageHandler, router)).Methods("GET")
+	router.homePageRoute = router.Path(path.Join(pathPrefix, "/")).Handler(createHandler(dashboardPageHandler, router)).Methods("GET")
+	router.dashboardRoute = router.Path(path.Join(pathPrefix, "/dashboard")).Handler(createHandler(dashboardPageHandler, router)).Methods("GET")
 	
 	// Add registration page
-	router.registrationRoute = router.Path("/register").Handler(createHandler(registerPageHandler, router)).Methods("GET")
-	router.registrationSubmitRoute = router.Path("/register").Handler(createHandler(registerActionHandler, router)).Methods("POST")
+	router.registrationRoute = router.Path(path.Join(pathPrefix, "/register")).Handler(createHandler(registerPageHandler, router)).Methods("GET")
+	router.registrationSubmitRoute = router.Path(path.Join(pathPrefix, "/register")).Handler(createHandler(registerActionHandler, router)).Methods("POST")
 	
 	// Add login page
-	router.loginRoute = router.Path("/login").Handler(createHandler(loginPageHandler, router)).Methods("GET")
+	router.loginRoute = router.Path(path.Join(pathPrefix, "/login")).Handler(createHandler(loginPageHandler, router)).Methods("GET")
 }
 
 

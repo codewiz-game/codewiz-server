@@ -2,8 +2,9 @@ package v1
 
 import (
 	"log"
+	"path"
 	"net/http"
-	"github.com/crob1140/codewiz/routes"
+	"github.com/gorilla/mux"
 )
 
 const (
@@ -17,12 +18,15 @@ type User struct {
 	Email string	`json:"emailAddress"`
 }
 
-func addUserRoutes(router *routes.Router) {
-	router.Path(usersPath).HandlerFunc(getAllUsersHandler).Methods("GET")
-	router.Path(usersPath).HandlerFunc(addUserHandler).Methods("POST")
+func addUserRoutes(router *mux.Router, pathPrefixes ...string) {
+	pathPrefixes = append(pathPrefixes, usersPath)
+	pathPrefix := path.Join(pathPrefixes...)
 
-	router.Path(usersPath + "/{id}").HandlerFunc(getUserHandler).Methods("GET")
-	router.Path(usersPath + "/{id}").HandlerFunc(modifyUserHandler).Methods("POST", "PUT")
+	router.Path(path.Join(pathPrefix)).HandlerFunc(getAllUsersHandler).Methods("GET")
+	router.Path(path.Join(pathPrefix)).HandlerFunc(addUserHandler).Methods("POST")
+
+	router.Path(path.Join(pathPrefix, "/{id}")).HandlerFunc(getUserHandler).Methods("GET")
+	router.Path(path.Join(pathPrefix, "/{id}")).HandlerFunc(modifyUserHandler).Methods("POST", "PUT")
 }
 
 func getAllUsersHandler(w http.ResponseWriter, r *http.Request) {

@@ -2,12 +2,12 @@ package v1
 
 import (
 	"net/http"
-	"github.com/crob1140/codewiz/routes"
+	"github.com/gorilla/mux"
 )
 
-func NewRouter() http.Handler {
-	router := routes.NewRouter()
-	addUserRoutes(router)
-	addWizardRoutes(router)
+func NewRouter(pathPrefixes ...string) http.Handler {
+	router := mux.NewRouter()
+	addUserRoutes(router, pathPrefixes...)
+	addWizardRoutes(router, pathPrefixes...)
 	return router
 }

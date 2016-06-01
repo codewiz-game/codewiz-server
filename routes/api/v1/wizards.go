@@ -2,8 +2,9 @@ package v1
 
 import (
 	"log"
+	"path"
 	"net/http"
-	"github.com/crob1140/codewiz/routes"
+	"github.com/gorilla/mux"
 )
 
 const (
@@ -19,12 +20,15 @@ type Wizard struct {
 	Spells []Spell `json:"spells"`
 }
 
-func addWizardRoutes(router *routes.Router) {
-	router.HandleFunc(wizardsPath, getAllWizardsHandler).Methods("GET")
-	router.HandleFunc(wizardsPath, addWizardHandler).Methods("POST")
+func addWizardRoutes(router *mux.Router, pathPrefixes ...string) {
+	pathPrefixes = append(pathPrefixes, wizardsPath)
+	pathPrefix := path.Join(pathPrefixes...)
 
-	router.HandleFunc(wizardsPath + "/{id}", getWizardHandler).Methods("GET")
-	router.HandleFunc(wizardsPath + "/{id}", modifyWizardHandler).Methods("POST")
+	router.HandleFunc(path.Join(pathPrefix), getAllWizardsHandler).Methods("GET")
+	router.HandleFunc(path.Join(pathPrefix), addWizardHandler).Methods("POST")
+
+	router.HandleFunc(path.Join(pathPrefix, "/{id}"), getWizardHandler).Methods("GET")
+	router.HandleFunc(path.Join(pathPrefix, "/{id}"), modifyWizardHandler).Methods("POST")
 }
 
 func getAllWizardsHandler(w http.ResponseWriter, r *http.Request) {
