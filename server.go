@@ -27,7 +27,7 @@ func NewServer(ds *datastore.SQLDataStore) *CodewizServer {
 	router.PathPrefix(apiPath).Handler(apiRouter)
 
 	// Add view endpoints
-	viewsRouter := views.NewRouter(userDao, viewsPath)
+	viewsRouter := views.NewRouter(viewsPath, userDao)
 	router.PathPrefix(viewsPath).Handler(viewsRouter)
 
 	return &CodewizServer{Router : router}

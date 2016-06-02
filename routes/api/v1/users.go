@@ -7,9 +7,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-const (
-	usersPath = "/users"
-)
 
 type User struct {
 	Username string `json:"username"`
@@ -18,15 +15,14 @@ type User struct {
 	Email string	`json:"emailAddress"`
 }
 
-func addUserRoutes(router *mux.Router, pathPrefixes ...string) {
-	pathPrefixes = append(pathPrefixes, usersPath)
-	pathPrefix := path.Join(pathPrefixes...)
+func addUserRoutes(router *mux.Router, v1Path string) {
+	usersPath := path.Join(v1Path, "/users")
 
-	router.Path(path.Join(pathPrefix)).HandlerFunc(getAllUsersHandler).Methods("GET")
-	router.Path(path.Join(pathPrefix)).HandlerFunc(addUserHandler).Methods("POST")
+	router.Path(usersPath).HandlerFunc(getAllUsersHandler).Methods("GET")
+	router.Path(usersPath).HandlerFunc(addUserHandler).Methods("POST")
 
-	router.Path(path.Join(pathPrefix, "/{id}")).HandlerFunc(getUserHandler).Methods("GET")
-	router.Path(path.Join(pathPrefix, "/{id}")).HandlerFunc(modifyUserHandler).Methods("POST", "PUT")
+	router.Path(path.Join(usersPath, "/{id}")).HandlerFunc(getUserHandler).Methods("GET")
+	router.Path(path.Join(usersPath, "/{id}")).HandlerFunc(modifyUserHandler).Methods("POST", "PUT")
 }
 
 func getAllUsersHandler(w http.ResponseWriter, r *http.Request) {

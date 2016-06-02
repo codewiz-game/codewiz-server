@@ -7,10 +7,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-const (
-	wizardsPath = "/wizards"
-)
-
 type Spell struct {
 	URI string `json:"uri"`
 }
@@ -20,15 +16,14 @@ type Wizard struct {
 	Spells []Spell `json:"spells"`
 }
 
-func addWizardRoutes(router *mux.Router, pathPrefixes ...string) {
-	pathPrefixes = append(pathPrefixes, wizardsPath)
-	pathPrefix := path.Join(pathPrefixes...)
+func addWizardRoutes(router *mux.Router, v1Path string) {
+	wizardsPath := path.Join(v1Path, "/wizards")
 
-	router.HandleFunc(path.Join(pathPrefix), getAllWizardsHandler).Methods("GET")
-	router.HandleFunc(path.Join(pathPrefix), addWizardHandler).Methods("POST")
+	router.HandleFunc(wizardsPath, getAllWizardsHandler).Methods("GET")
+	router.HandleFunc(wizardsPath, addWizardHandler).Methods("POST")
 
-	router.HandleFunc(path.Join(pathPrefix, "/{id}"), getWizardHandler).Methods("GET")
-	router.HandleFunc(path.Join(pathPrefix, "/{id}"), modifyWizardHandler).Methods("POST")
+	router.HandleFunc(path.Join(wizardsPath, "/{id}"), getWizardHandler).Methods("GET")
+	router.HandleFunc(path.Join(wizardsPath, "/{id}"), modifyWizardHandler).Methods("POST")
 }
 
 func getAllWizardsHandler(w http.ResponseWriter, r *http.Request) {

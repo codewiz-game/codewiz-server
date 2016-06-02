@@ -5,9 +5,9 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func NewRouter(pathPrefixes ...string) http.Handler {
+func NewRouter(v1Path string) http.Handler {
 	router := mux.NewRouter()
-	addUserRoutes(router, pathPrefixes...)
-	addWizardRoutes(router, pathPrefixes...)
+	addUserRoutes(router, v1Path)
+	addWizardRoutes(router, v1Path)
 	return router
 }

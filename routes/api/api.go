@@ -1,28 +1,18 @@
 package api
 
 import (
-	"fmt"
 	"path"
 	"net/http"
 	"github.com/gorilla/mux"
 	"github.com/crob1140/codewiz/routes/api/v1"
 )
 
-const (
-	// Versioning
-	LatestVersion = 1
-	versionPathFormat = "/v%d"
-	latestVersionPath = "/latest"
-)
-
-func NewRouter(pathPrefixes ...string) http.Handler {
+func NewRouter(apiPath string) http.Handler {
 
 	router := mux.NewRouter()
 
-	apiPath := path.Join(pathPrefixes...)
-
 	// Add version one
-	v1Path := path.Join(apiPath, fmt.Sprintf(versionPathFormat, 1))
+	v1Path := path.Join(apiPath, "/v1")
 	v1Router := v1.NewRouter(v1Path)
 	router.PathPrefix(v1Path).Handler(v1Router)
 	
@@ -34,9 +24,9 @@ func NewRouter(pathPrefixes ...string) http.Handler {
 	// and overriding the changes.
 	// ----------------------------------------------------------------
 
-	latestPath := path.Join(apiPath, latestVersionPath)
-	latestRouter := v1.NewRouter(latestPath)
-	router.PathPrefix(latestPath).Handler(latestRouter)
+	latestVersionPath := path.Join(apiPath, "/latest")
+	latestVersionRouter := v1.NewRouter(latestVersionPath)
+	router.PathPrefix(latestVersionPath).Handler(latestVersionRouter)
 
 	return router
 

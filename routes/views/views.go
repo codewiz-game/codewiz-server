@@ -87,34 +87,32 @@ func createHandler(handlerFunc func(http.ResponseWriter, *http.Request, *session
 	return &handler{router : router, handlerFunc : handlerFunc}
 }
 
-func NewRouter(userDao *models.UserDao, pathPrefixes ...string) http.Handler {
+func NewRouter(viewsPath string, userDao *models.UserDao) http.Handler {
 
 	// Initialise the session store with the necessary keys
 	sessionStore := sessions.NewCookieStore([]byte("top-secret-keks")) // TODO: read this directly from config? make it another arg?
 	viewsRouter := &viewsRouter{Router : mux.NewRouter(), userDao : userDao, sessionStore : sessionStore}
 	viewsRouter.NotFoundHandler = &custom404Handler{}
-	initRoutes(viewsRouter, pathPrefixes...)
+	initRoutes(viewsRouter, viewsPath)
 	return viewsRouter
 }
 
-func initRoutes(router *viewsRouter, pathPrefixes ...string) {
-
-	pathPrefix := path.Join(pathPrefixes...)
+func initRoutes(router *viewsRouter, viewsPath string) {
 
 	// Set static resource directory
 	resourceHandler := http.StripPrefix("/resources", http.FileServer(http.Dir(resourceDirectory)))
-	router.PathPrefix(path.Join(pathPrefix, "/resources")).Handler(resourceHandler)
+	router.PathPrefix(path.Join(viewsPath, "/resources")).Handler(resourceHandler)
 
 	// Add dashboard page
-	router.homePageRoute = router.Path(path.Join(pathPrefix, "/")).Handler(createHandler(dashboardPageHandler, router)).Methods("GET")
-	router.dashboardRoute = router.Path(path.Join(pathPrefix, "/dashboard")).Handler(createHandler(dashboardPageHandler, router)).Methods("GET")
+	router.homePageRoute = router.Path(viewsPath).Handler(createHandler(dashboardPageHandler, router)).Methods("GET")
+	router.dashboardRoute = router.Path(viewsPath).Handler(createHandler(dashboardPageHandler, router)).Methods("GET")
 	
 	// Add registration page
-	router.registrationRoute = router.Path(path.Join(pathPrefix, "/register")).Handler(createHandler(registerPageHandler, router)).Methods("GET")
-	router.registrationSubmitRoute = router.Path(path.Join(pathPrefix, "/register")).Handler(createHandler(registerActionHandler, router)).Methods("POST")
+	router.registrationRoute = router.Path(path.Join(viewsPath, "/register")).Handler(createHandler(registerPageHandler, router)).Methods("GET")
+	router.registrationSubmitRoute = router.Path(path.Join(viewsPath, "/register")).Handler(createHandler(registerActionHandler, router)).Methods("POST")
 	
 	// Add login page
-	router.loginRoute = router.Path(path.Join(pathPrefix, "/login")).Handler(createHandler(loginPageHandler, router)).Methods("GET")
+	router.loginRoute = router.Path(path.Join(viewsPath, "/login")).Handler(createHandler(loginPageHandler, router)).Methods("GET")
 }
 
 
