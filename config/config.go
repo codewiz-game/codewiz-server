@@ -1,9 +1,8 @@
 package config
 
 import (
-	"errors"
-	"strings"
 	"github.com/spf13/viper"
+	"strings"
 )
 
 const (
@@ -15,28 +14,27 @@ var envReplacer *strings.Replacer
 func init() {
 	envReplacer = strings.NewReplacer(".", "_")
 
-	// Configure Viper to search for all configurations 
+	// Configure Viper to search for all configurations
 	// in the system environment variables
 	viper.SetEnvPrefix(envPrefix)
 	viper.AutomaticEnv()
 	viper.SetEnvKeyReplacer(envReplacer)
-
-
 }
 
-func GetString(key string) (string, error) {
-	value := viper.GetString(key)
-	if value == "" {
-		return value, getMissingVariableError(key)
+func GetString(key string, defaultVal ...string) string {
+	if !viper.InConfig(key) && len(defaultVal) > 0 {
+		return defaultVal[0]
 	}
-
-	return value, nil
+	return viper.GetString(key)
 }
 
-func getMissingVariableError(key string) error {
-	return errors.New("Missing environment variable " + getEnvironmentVariableName(key))
+func GetBool(key string, defaultVal ...bool) bool {
+	if !viper.InConfig(key) && len(defaultVal) > 0 {
+		return defaultVal[0]
+	}
+	return viper.GetBool(key)
 }
 
-func getEnvironmentVariableName(key string) string {
+func GetEnvironmentVariableName(key string) string {
 	return envPrefix + "_" + envReplacer.Replace(strings.ToUpper(key))
 }

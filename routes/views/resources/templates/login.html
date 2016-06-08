@@ -1,0 +1,48 @@
+<html>
+	<head>
+		<title> Login </title>
+		<script type="text/javascript" src="resources/libs/jquery-2.2.4.min.js"></script>
+		<script>
+			function validate()
+			{
+				var username = $("username-field").text();
+				var password = $("password-field").text();	
+				return true;
+			}
+		</script>
+	</head>
+	<body>
+		<form id="login-form" onsubmit="javascript:validate()" action="{{.SubmitPath}}" method="post">
+			<div>
+				<label for="username-field">Username: </label>
+				<input id="username-field" name="username" type="text" />
+				{{with $usernameErrors := index .FieldErrors "username"}}
+					{{if $usernameErrors }}
+						<ul id="username-errors">
+							{{range $index, $error := $usernameErrors }}
+								<li> {{$error}} </li>
+							{{end}}
+						</ul>
+					{{end}}
+				{{end}}
+			</div>
+			<div>
+				<label for="password-field">Password: </label>
+				<input id="password-field" name="password" type="password" />
+				{{with $passwordErrors := index .FieldErrors "password"}}
+					{{if $passwordErrors }}
+						<ul id="password-errors">
+							{{range $index, $error := $passwordErrors }}
+								<li> {{$error}} </li>
+							{{end}}
+						</ul>
+					{{end}}
+				{{end}}
+				<input type="button"></input> <!-- TODO: change to an eye glyphicon -->
+			</div>
+			<div>
+				<input type="submit" value="Submit" />
+			</div>
+		</form>
+	</body>
+</html>

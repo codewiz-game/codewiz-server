@@ -2,11 +2,13 @@ package datastore
 
 import (
 	"database/sql"
-	"time"
 	"errors"
 	"github.com/go-gorp/gorp"
+	_ "github.com/mattes/migrate/driver/mysql"
+	_ "github.com/mattes/migrate/driver/sqlite3"
 	"github.com/mattes/migrate/migrate"
 	"reflect"
+	"time"
 )
 
 type StatusCode uint
@@ -19,30 +21,29 @@ const (
 	migrationScriptsPath = "./datastore/migrations"
 )
 
-type DBStore struct {
+type DB struct {
 	*gorp.DbMap
 	driver string
-	dsn string
+	dsn    string
 }
 
-func NewDBStore(driver string, dsn string) (*DBStore, error) {
+func Open(driver string, dsn string) (*DB, error) {
 	db, err := sql.Open(driver, dsn)
 	if err != nil {
 		return nil, err
 	}
 
 	gorpDialect := getDialectForDriver(driver)
-	dbMap := &gorp.DbMap{Db: db, Dialect : gorpDialect}
-	return &DBStore{DbMap: dbMap, driver : driver, dsn : dsn}, nil
+	dbMap := &gorp.DbMap{Db: db, Dialect: gorpDialect}
+	return &DB{DbMap: dbMap, driver: driver, dsn: dsn}, nil
 }
 
-func (store *DBStore) Sync() []error {
-	allErrors, _ := migrate.UpSync(store.driver + "://" + store.dsn, migrationScriptsPath)
-	return allErrors
+func (ds *DB) UpSync() ([]error, bool) {
+	return migrate.UpSync(ds.driver+"://"+ds.dsn, migrationScriptsPath)
 }
 
-func (ds *DBStore) Insert(record interface{}) error {
-	
+func (ds *DB) Insert(record interface{}) error {
+
 	// Update the status, creation time and last modifed before insertion, so that the changes can be persisted
 	statusRecord, hasStatus := record.(StatusRecorder)
 	var previousStatus StatusCode
@@ -58,7 +59,7 @@ func (ds *DBStore) Insert(record interface{}) error {
 		previousCreationTime = creationTimeRecord.CreationTime()
 		creationTimeRecord.SetCreationTime(now)
 	}
-	
+
 	lastUpdatedTimeRecord, hasLastUpdatedTime := record.(LastUpdateTimeRecorder)
 	var previousLastUpdatedTime time.Time
 	if hasLastUpdatedTime {
@@ -72,7 +73,7 @@ func (ds *DBStore) Insert(record interface{}) error {
 		var existingRecord interface{}
 		existingRecord, err = ds.DbMap.Get(record, logicallyDeletableRecord.Keys()...)
 		if existingRecord != nil {
-			 // No need to check validity, since all LogicallyDeletable records are also StatusRecorders
+			// No need to check validity, since all LogicallyDeletable records are also StatusRecorders
 			existingStatusRecorder := existingRecord.(StatusRecorder)
 			if existingStatusRecorder.Status() == Deleted {
 				err = ds.Update(record)
@@ -105,7 +106,7 @@ func (ds *DBStore) Insert(record interface{}) error {
 	return err
 }
 
-func (ds *DBStore) Update(record interface{}) error {
+func (ds *DB) Update(record interface{}) error {
 	now := getCurrentTime()
 	lastUpdatedTimeRecord, hasLastUpdatedTime := record.(LastUpdateTimeRecorder)
 	var previousLastUpdatedTime time.Time
@@ -113,7 +114,7 @@ func (ds *DBStore) Update(record interface{}) error {
 		previousLastUpdatedTime = lastUpdatedTimeRecord.LastUpdatedTime()
 		lastUpdatedTimeRecord.SetLastUpdatedTime(now)
 	}
-	
+
 	count, err := ds.DbMap.Update(record)
 	if err == nil && count == 0 {
 		err = errors.New("No records were affected by the update operation.")
@@ -128,7 +129,7 @@ func (ds *DBStore) Update(record interface{}) error {
 	return err
 }
 
-func (ds *DBStore) Delete(record interface{}) error {
+func (ds *DB) Delete(record interface{}) error {
 	statusRecord, hasStatus := record.(StatusRecorder)
 	var previousStatus StatusCode
 	if hasStatus {
@@ -143,13 +144,13 @@ func (ds *DBStore) Delete(record interface{}) error {
 		previousDeletionTime = deletionTimeRecord.DeletionTime()
 		deletionTimeRecord.SetDeletionTime(now)
 	}
-	
+
 	err := ds.Update(record)
 	if err != nil {
 		if hasStatus {
 			statusRecord.SetStatus(previousStatus)
 		}
-		
+
 		if hasDeletionTime {
 			deletionTimeRecord.SetDeletionTime(previousDeletionTime)
 		}
@@ -158,7 +159,7 @@ func (ds *DBStore) Delete(record interface{}) error {
 	return err
 }
 
-func (ds *DBStore) Get(record interface{}, whereClause string, args ...interface{}) (interface{}, error) {
+func (ds *DB) Get(record interface{}, whereClause string, args ...interface{}) (interface{}, error) {
 	results, err := ds.Select(record, whereClause, args...)
 	if err != nil {
 		return nil, err
@@ -176,8 +177,8 @@ func (ds *DBStore) Get(record interface{}, whereClause string, args ...interface
 	return results[0], nil
 }
 
-func (ds *DBStore) Select(record interface{}, whereClause string, args ...interface{}) ([]interface{}, error) {
-	
+func (ds *DB) Select(record interface{}, whereClause string, args ...interface{}) ([]interface{}, error) {
+
 	// If the user passes a struct, and only the pointer to the struct of that type
 	// has the implementations for the LogicallyDeletable methods, we need to create
 	// a pointer to use instead.
@@ -210,7 +211,7 @@ func getDialectForDriver(driverName string) gorp.Dialect {
 	case "sqlite3":
 		gorpDialect = gorp.SqliteDialect{}
 	default:
-		gorpDialect = gorp.MySQLDialect{}	
+		gorpDialect = gorp.MySQLDialect{}
 	}
 
 	return gorpDialect

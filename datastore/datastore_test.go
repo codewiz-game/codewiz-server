@@ -27,8 +27,7 @@ func (result *testResult) RowsAffected() (int64, error) {
 	return result.rowsAffected, result.err
 }
 
-
-func TestDBStore_Insert_SucceedsOnValidRecord(t *testing.T) {
+func TestDB_Insert_SucceedsOnValidRecord(t *testing.T) {
 	ds, err := initTestDataStore()
 	if err != nil {
 		t.Fatal(err)
@@ -66,7 +65,7 @@ func TestDBStore_Insert_SucceedsOnValidRecord(t *testing.T) {
 	closeTestDatastore(ds)
 }
 
-func TestDBStore_Insert_FailsOnInvalidRecord(t *testing.T) {
+func TestDB_Insert_FailsOnInvalidRecord(t *testing.T) {
 	ds, err := initTestDataStore()
 	if err != nil {
 		t.Fatal(err)
@@ -88,7 +87,7 @@ func TestDBStore_Insert_FailsOnInvalidRecord(t *testing.T) {
 	closeTestDatastore(ds)
 }
 
-func TestDBStore_Insert_FailsOnSameRecord(t *testing.T) {
+func TestDB_Insert_FailsOnSameRecord(t *testing.T) {
 	ds, err := initTestDataStore()
 	if err != nil {
 		t.Fatal(err)
@@ -129,7 +128,7 @@ func TestDBStore_Insert_FailsOnSameRecord(t *testing.T) {
 	closeTestDatastore(ds)
 }
 
-func TestDBStore_Insert_FailsOnExistingPrimaryKey(t *testing.T) {
+func TestDB_Insert_FailsOnExistingPrimaryKey(t *testing.T) {
 	ds, err := initTestDataStore()
 	if err != nil {
 		t.Fatal(err)
@@ -170,7 +169,7 @@ func TestDBStore_Insert_FailsOnExistingPrimaryKey(t *testing.T) {
 	closeTestDatastore(ds)
 }
 
-func TestDBStore_Insert_PreviouslyDeletedRecord(t *testing.T) {
+func TestDB_Insert_PreviouslyDeletedRecord(t *testing.T) {
 	ds, err := initTestDataStore()
 	if err != nil {
 		t.Fatal(err)
@@ -201,7 +200,7 @@ func TestDBStore_Insert_PreviouslyDeletedRecord(t *testing.T) {
 	closeTestDatastore(ds)
 }
 
-func TestDBStore_Update_SucceedsOnValidRecord(t *testing.T) {
+func TestDB_Update_SucceedsOnValidRecord(t *testing.T) {
 	ds, err := initTestDataStore()
 	if err != nil {
 		t.Fatal(err)
@@ -242,7 +241,7 @@ func TestDBStore_Update_SucceedsOnValidRecord(t *testing.T) {
 	closeTestDatastore(ds)
 }
 
-func TestDBStore_Update_FailsOnInvalidRecord(t *testing.T) {
+func TestDB_Update_FailsOnInvalidRecord(t *testing.T) {
 	ds, err := initTestDataStore()
 	if err != nil {
 		t.Fatal(err)
@@ -274,7 +273,7 @@ func TestDBStore_Update_FailsOnInvalidRecord(t *testing.T) {
 	closeTestDatastore(ds)
 }
 
-func TestDBStore_Update_FailsOnMissingRecord(t *testing.T) {
+func TestDB_Update_FailsOnMissingRecord(t *testing.T) {
 	ds, err := initTestDataStore()
 	if err != nil {
 		t.Fatal(err)
@@ -299,7 +298,7 @@ func TestDBStore_Update_FailsOnMissingRecord(t *testing.T) {
 	closeTestDatastore(ds)
 }
 
-func TestDBStore_Delete_SucceedsOnExistingRecord(t *testing.T) {
+func TestDB_Delete_SucceedsOnExistingRecord(t *testing.T) {
 	ds, err := initTestDataStore()
 	if err != nil {
 		t.Fatal(err)
@@ -343,7 +342,7 @@ func TestDBStore_Delete_SucceedsOnExistingRecord(t *testing.T) {
 	closeTestDatastore(ds)
 }
 
-func TestDBStore_Delete_FailsOnMissingRecord(t *testing.T) {
+func TestDB_Delete_FailsOnMissingRecord(t *testing.T) {
 	ds, err := initTestDataStore()
 	if err != nil {
 		t.Fatal(err)
@@ -371,7 +370,7 @@ func TestDBStore_Delete_FailsOnMissingRecord(t *testing.T) {
 	closeTestDatastore(ds)
 }
 
-func TestDBStore_Get_IgnoresLogicallyDeletedRecords(t *testing.T) {
+func TestDB_Get_IgnoresLogicallyDeletedRecords(t *testing.T) {
 	ds, err := initTestDataStore()
 	if err != nil {
 		t.Fatal(err)
@@ -407,7 +406,7 @@ func TestDBStore_Get_IgnoresLogicallyDeletedRecords(t *testing.T) {
 	closeTestDatastore(ds)
 }
 
-func TestDBStore_Get_MoreThanOneResult(t *testing.T) {
+func TestDB_Get_MoreThanOneResult(t *testing.T) {
 	ds, err := initTestDataStore()
 	if err != nil {
 		t.Fatal(err)
@@ -430,9 +429,8 @@ func TestDBStore_Get_MoreThanOneResult(t *testing.T) {
 	closeTestDatastore(ds)
 }
 
-
-func initTestDataStore() (*DBStore, error) {
-	ds, err := NewDBStore("sqlite3", ":memory:")
+func initTestDataStore() (*DB, error) {
+	ds, err := Open("sqlite3", ":memory:")
 	if err != nil {
 		return nil, err
 	}
@@ -452,12 +450,12 @@ func initTestDataStore() (*DBStore, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	ds.AddTableWithName(testRecord{}, "Test")
 	return ds, nil
 }
 
-func closeTestDatastore(ds *DBStore) {
+func closeTestDatastore(ds *DB) {
 	ds.DbMap.Db.Close()
 }
 

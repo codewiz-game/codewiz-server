@@ -1,16 +1,16 @@
 package main
 
 import (
-	"net/http"
-	"github.com/gorilla/mux"
+	"github.com/crob1140/codewiz/datastore"
+	"github.com/crob1140/codewiz/models/users"
 	"github.com/crob1140/codewiz/routes/api"
 	"github.com/crob1140/codewiz/routes/views"
-	"github.com/crob1140/codewiz/datastore"
-	"github.com/crob1140/codewiz/models"
+	"github.com/gorilla/mux"
+	"net/http"
 )
 
 const (
-	apiPath = "/api"
+	apiPath   = "/api"
 	viewsPath = "/"
 )
 
@@ -18,8 +18,8 @@ type CodewizServer struct {
 	Router http.Handler
 }
 
-func NewServer(ds *datastore.SQLDataStore) *CodewizServer {
-	userDao := models.NewUserDao(ds)
+func NewServer(db *datastore.DB) *CodewizServer {
+	userDao := users.NewDao(db)
 	router := mux.NewRouter()
 
 	// Add API endpoints
@@ -30,7 +30,7 @@ func NewServer(ds *datastore.SQLDataStore) *CodewizServer {
 	viewsRouter := views.NewRouter(viewsPath, userDao)
 	router.PathPrefix(viewsPath).Handler(viewsRouter)
 
-	return &CodewizServer{Router : router}
+	return &CodewizServer{Router: router}
 }
 
 func (server *CodewizServer) ListenAndServe(address string) {

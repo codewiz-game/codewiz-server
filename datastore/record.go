@@ -32,11 +32,11 @@ type LastUpdateTimeRecorder interface {
 }
 
 type BaseFields struct {
-	ID				int64		  `db:"ID, autoincrement, primarykey"`
-	Status       	StatusCode    `db:"Status"`
-	CreationTime 	gorp.NullTime `db:"CreationTime"`
-	LastUpdatedTime gorp.NullTime `db:"LastModified"`
-	DeletionTime 	gorp.NullTime `db:"DeletionTime"`
+	ID              uint64        `db:"ID, autoincrement, primarykey"`
+	Status          StatusCode    `db:"Status"`
+	CreationTime    gorp.NullTime `db:"CreationTime"`
+	LastUpdatedTime gorp.NullTime `db:"LastUpdatedTime"`
+	DeletionTime    gorp.NullTime `db:"DeletionTime"`
 }
 
 type BaseRecord struct {
@@ -48,7 +48,7 @@ func NewRecord() *BaseRecord {
 }
 
 func (record *BaseRecord) Keys() []interface{} {
-	return []interface{}{ record.BaseFields.ID }
+	return []interface{}{record.BaseFields.ID}
 }
 
 func (record *BaseRecord) Status() StatusCode {
@@ -72,7 +72,7 @@ func (record *BaseRecord) CreationTime() time.Time {
 }
 
 func (record *BaseRecord) SetCreationTime(time time.Time) {
-	record.BaseFields.CreationTime = gorp.NullTime{Time : time, Valid : !time.IsZero()}
+	record.BaseFields.CreationTime = gorp.NullTime{Time: time, Valid: !time.IsZero()}
 }
 
 func (record *BaseRecord) DeletionTime() time.Time {
@@ -84,7 +84,7 @@ func (record *BaseRecord) DeletionTime() time.Time {
 }
 
 func (record *BaseRecord) SetDeletionTime(time time.Time) {
-	record.BaseFields.DeletionTime = gorp.NullTime{Time : time, Valid : !time.IsZero()}
+	record.BaseFields.DeletionTime = gorp.NullTime{Time: time, Valid: !time.IsZero()}
 }
 
 func (record *BaseRecord) LastUpdatedTime() time.Time {
@@ -96,5 +96,5 @@ func (record *BaseRecord) LastUpdatedTime() time.Time {
 }
 
 func (record *BaseRecord) SetLastUpdatedTime(time time.Time) {
-	record.BaseFields.LastUpdatedTime = gorp.NullTime{Time : time, Valid : !time.IsZero()}
+	record.BaseFields.LastUpdatedTime = gorp.NullTime{Time: time, Valid: !time.IsZero()}
 }

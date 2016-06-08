@@ -1,49 +1,61 @@
 package main
 
 import (
-	"log"
-	"database/sql"
+	log "github.com/Sirupsen/logrus"
 	"github.com/crob1140/codewiz/config"
+	"github.com/crob1140/codewiz/config/keys"
 	"github.com/crob1140/codewiz/datastore"
+	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/mattn/go-sqlite3"
 )
+
 func main() {
 
-	dbDriver, err := config.GetString("database.driver")
+	initLogger()
+
+	dbDriver := config.GetString(keys.DatabaseDriver)
+	assertConfigExists(keys.DatabaseDriver, dbDriver)
+
+	dbDSN := config.GetString(keys.DatabaseDSN)
+	assertConfigExists(keys.DatabaseDSN, dbDSN)
+
+	port := config.GetString(keys.Port)
+	assertConfigExists(keys.Port, port)
+
+	ds, err := datastore.Open(dbDriver, dbDSN)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	dbHost, err := config.GetString("database.host")
-	if err != nil {
-		log.Fatal(err)
+	errs, ok := ds.UpSync()
+	if !ok {
+		for _, err := range errs {
+			log.Error(err)
+		}
 	}
 
-	dbPort, err := config.GetString("database.port")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	host, err := config.GetString("host")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	port, err := config.GetString("port")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	db, err := sql.Open(dbDriver, dbHost + ":" + dbPort)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	ds := datastore.NewDatastore(db , dbDriver)
 	server := NewServer(ds)
-	server.ListenAndServe(host + ":" + port)
+	server.ListenAndServe(":" + port)
 }
 
-func getDialectForDriverName() {
+func initLogger() {
+	logLevel := config.GetString(keys.LogLevel)
+	level := log.InfoLevel
+	if logLevel != "" {
+		var err error
+		if level, err = log.ParseLevel(logLevel); err != nil {
+			log.Fatal(err)
+		}
+	}
 
+	log.SetLevel(level)
+	log.SetFormatter(&log.JSONFormatter{})
+}
+
+func assertConfigExists(key string, value string) {
+	if value == "" {
+		log.WithFields(log.Fields{
+			"variable": config.GetEnvironmentVariableName(key),
+		}).Fatal("Missing environment variable.")
+	}
 }
