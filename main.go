@@ -1,7 +1,7 @@
 package main
 
 import (
-	log "github.com/Sirupsen/logrus"
+	"github.com/crob1140/codewiz/log"
 	"github.com/crob1140/codewiz/config"
 	"github.com/crob1140/codewiz/config/keys"
 	"github.com/crob1140/codewiz/datastore"
@@ -35,6 +35,8 @@ func main() {
 	}
 
 	server := NewServer(ds)
+
+	log.Info("Server is now listening for requests", log.Fields{"port" : port})
 	server.ListenAndServe(":" + port)
 }
 
@@ -49,13 +51,12 @@ func initLogger() {
 	}
 
 	log.SetLevel(level)
-	log.SetFormatter(&log.JSONFormatter{})
 }
 
 func assertConfigExists(key string, value string) {
 	if value == "" {
-		log.WithFields(log.Fields{
+		log.Fatal("Missing environment variable.", log.Fields{
 			"variable": config.GetEnvironmentVariableName(key),
-		}).Fatal("Missing environment variable.")
+		});
 	}
 }
