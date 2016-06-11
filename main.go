@@ -22,6 +22,7 @@ func main() {
 	port := config.GetString(keys.Port)
 	assertConfigExists(keys.Port, port)
 
+	log.Debug("Opening database connection", log.Fields{"driver" : dbDriver, "dsn" : dbDSN})
 	ds, err := datastore.Open(dbDriver, dbDSN)
 	if err != nil {
 		log.Fatal(err)
