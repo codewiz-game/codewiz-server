@@ -1,0 +1,54 @@
+<html>
+	<head>
+		<title> Create Wizard </title>
+		<script>
+			function validate() 
+			{
+				return true;
+			}
+		</script>
+
+		<form id="create-wizard-form" onsubmit="javascript:validate()" action="{{.SubmitPath}}" method="post">
+			<div>
+				<label for="name-field">Name: </label>
+				<input id="name-field" name="name" type="text" />
+				{{if .Errors}}
+					{{if .Errors.FieldErrors}}
+						{{with $nameErrors := index .Errors.FieldErrors "name"}}
+							<ul id="name-errors">
+								{{range $index, $error := $nameErrors }}
+									<li> {{$error}} </li>
+								{{end}}
+							<ul>
+						{{end}}
+					{{end}}
+				{{end}}
+			</div>
+
+			<div>
+				<label for="sex-field">Sex: </label>
+				<select id="sex-field" name="sex">
+					<option value="M">Male</option>
+					<option value="F">Female</option>
+				</select>
+				{{if .Errors}}
+					{{if .Errors.FieldErrors}}
+						{{with $sexErrors := index .Errors.FieldErrors "sex"}}
+							{{if $sexErrors }}
+								<ul id="sex-errors">
+									{{range $index, $error := $sexErrors }}
+										<li> {{$error}} </li>
+									{{end}}
+								<ul>
+							{{end}}
+						{{end}}
+					{{end}}
+				{{end}}
+			</div>
+
+			<div>
+				<input type="submit" value="Submit" />
+			</div>
+		</form>
+	</head>
+</html>

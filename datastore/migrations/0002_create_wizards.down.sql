@@ -1,0 +1,2 @@
+DROP INDEX IF EXISTS ix_WizardsOwnerID;
+DROP TABLE IF EXISTS Wizards;

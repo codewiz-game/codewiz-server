@@ -25,19 +25,25 @@ func main() {
 	log.Debug("Opening database connection", log.Fields{"driver" : dbDriver, "dsn" : dbDSN})
 	ds, err := datastore.Open(dbDriver, dbDSN)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Failed to open database connection", log.Fields{
+			"error" : err,
+		})
 	}
 
 	errs, ok := ds.UpSync()
 	if !ok {
 		for _, err := range errs {
-			log.Error(err)
+			log.Fatal("Failed to synchronise datastore tables", log.Fields{
+				"error" : err,
+			})
 		}
 	}
 
 	server := NewServer(ds)
 
-	log.Info("Server is now listening for requests", log.Fields{"port" : port})
+	log.Info("Server is now listening for requests", log.Fields{
+		"port" : port,
+	})
 	server.ListenAndServe(":" + port)
 }
 
@@ -47,7 +53,9 @@ func initLogger() {
 	if logLevel != "" {
 		var err error
 		if level, err = log.ParseLevel(logLevel); err != nil {
-			log.Fatal(err)
+			log.Error("Unrecognised log level", log.Fields{
+				"level" : logLevel,
+			})
 		}
 	}
 

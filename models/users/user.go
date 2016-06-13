@@ -8,7 +8,7 @@ import (
 type User struct {
 	datastore.BaseRecord
 	Username string `db:"Username"`
-	Email string 	`db:Email`
+	Email string 	`db:"Email"`
 	HashedPassword string `db:"Password"`
 }
 

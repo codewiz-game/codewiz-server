@@ -441,7 +441,7 @@ func initTestDataStore() (*DB, error) {
 		Status INTEGER NOT NULL,
 		CreationTime DATETIME,
 		DeletionTime DATETIME,
-		LastModified DATETIME, 
+		LastUpdatedTime DATETIME, 
 		StringField VARCHAR(255),
 		IntegerField INTEGER
 		CHECK (IntegerField > 0)

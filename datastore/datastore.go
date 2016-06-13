@@ -177,24 +177,27 @@ func (ds *DB) Get(record interface{}, whereClause string, args ...interface{}) (
 	return results[0], nil
 }
 
-func (ds *DB) Select(record interface{}, whereClause string, args ...interface{}) ([]interface{}, error) {
+func (ds *DB) Select(results interface{}, whereClause string, args ...interface{}) ([]interface{}, error) {
 
-	// If the user passes a struct, and only the pointer to the struct of that type
-	// has the implementations for the LogicallyDeletable methods, we need to create
-	// a pointer to use instead.
-	recordType := reflect.TypeOf(record)
-	if recordType.Kind() != reflect.Ptr {
-		record = reflect.New(recordType).Interface()
+	recordType := reflect.TypeOf(results)
+
+	// Determine the record type by digging down until we reach something that isn't a container or reference
+	for recordType.Kind() == reflect.Ptr || recordType.Kind() == reflect.Slice {
+		recordType = recordType.Elem()
 	}
 
-	logicallyDeletableRecord, supportsLogicalDeletion := record.(LogicallyDeletable)
+	// Create a new pointer to the determined type
+	recordPtr := reflect.New(recordType).Interface()
+
+	// Use the pointer to determine whether the type supports logical deletion, and modify the query if it does
+	logicallyDeletableRecord, supportsLogicalDeletion := recordPtr.(LogicallyDeletable)
 	if supportsLogicalDeletion {
 		statusColumn := logicallyDeletableRecord.StatusColumn()
 		whereClause = whereClause + " AND " + statusColumn + " <> ?"
 		args = append(args, Deleted)
 	}
 
-	return ds.DbMap.Select(record, whereClause, args...)
+	return ds.DbMap.Select(results, whereClause, args...)
 }
 
 func getCurrentTime() time.Time {

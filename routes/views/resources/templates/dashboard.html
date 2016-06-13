@@ -5,13 +5,17 @@
 
 	<body>
 		<h1> Welcome, {{.Username}} </h1>
-		
-		<div>
+
+		{{if .Wizards}}
 			<h2> Wizards </h2>
 			<ul>
-				<li><a href="">Bob</a></li>
-			<ul>
-		</div>
+				{{range $index, $wizard := .Wizards}}
+					<li><a href="/wizards/{{$wizard.ID}}">{{$wizard.Name}}</a></li>
+				{{end}}
+			</ul>
+		{{else}}
+			<p> Press <a href="{{.CreateWizardPath}}">here</a> to create your first wizard! </p>
+		{{end}}
 
 	</body>
 </html>

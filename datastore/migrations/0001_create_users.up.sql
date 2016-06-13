@@ -4,9 +4,11 @@ CREATE TABLE IF NOT EXISTS Users (
 	LastUpdatedTime DATETIME,
 	DeletionTime DATETIME,
 	Status INTEGER,
-	Username VARCHAR(128),
-	Password CHAR(60),
+	Username VARCHAR(128) NOT NULL,
+	Password CHAR(60) NOT NULL,
 	Email VARCHAR(254),
 	CONSTRAINT pk_UsersID PRIMARY KEY (ID),
-	CONSTRAINT uc_UsersUsername UNIQUE (Username)
+	CONSTRAINT uk_UsersUsername UNIQUE (Username)
 );
+
+CREATE INDEX ix_UsersUsername ON Users(Username);

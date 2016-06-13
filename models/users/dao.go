@@ -13,7 +13,12 @@ func NewDao(db *datastore.DB) *Dao {
 	return &Dao{DB : db}
 }
 
-func (dao *Dao) Get(username string) (*User, error) {
+func (dao *Dao) GetByID(id uint64) (*User, error) {
+	user, err := dao.DB.Get(User{}, "SELECT * FROM Users WHERE ID = ?", id)
+	return user.(*User), err
+}
+
+func (dao *Dao) GetByUsername(username string) (*User, error) {
 	user, err := dao.DB.Get(User{}, "SELECT * FROM Users WHERE Username = ?", username)
 	return user.(*User), err
 }

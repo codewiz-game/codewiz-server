@@ -7,7 +7,7 @@ import (
 )
 
 
-func registerPageHandler(w http.ResponseWriter, r *http.Request, session *sessions.Session, router *router) {
+func registerPageHandler(w http.ResponseWriter, r *http.Request, session *sessions.Session, router *Router) {
 	// If the user is reaching this page after being
 	// redirected due to a validation error, the errors
 	// be error messages stored in a flash message which
@@ -33,12 +33,15 @@ func registerPageHandler(w http.ResponseWriter, r *http.Request, session *sessio
 	data := struct {
 		SubmitPath  string
 		FieldErrors map[string][]string
-	}{registerUrl.String(), errs}
+	}{
+		registerUrl.String(), 
+		errs,
+	}
 
 	render(w, "register.html", data)
 }
 
-func registerActionHandler(w http.ResponseWriter, r *http.Request, session *sessions.Session, router *router) {
+func registerActionHandler(w http.ResponseWriter, r *http.Request, session *sessions.Session, router *Router) {
 
 	user, errs := validateRegistrationRequest(r)
 
@@ -50,7 +53,7 @@ func registerActionHandler(w http.ResponseWriter, r *http.Request, session *sess
 		}
 
 		// Log the user in by saving their username as a session attribute
-		session.Values["username"] = user.Username
+		session.Values["userID"] = user.ID
 		if err := session.Save(r, w); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

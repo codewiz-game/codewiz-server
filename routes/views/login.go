@@ -1,12 +1,13 @@
 package views
 
 import (
+	"github.com/crob1140/codewiz/log"
 	"github.com/gorilla/sessions"
 	"net/http"
 )
 
 
-func loginPageHandler(w http.ResponseWriter, r *http.Request, session *sessions.Session, router *router) {
+func loginPageHandler(w http.ResponseWriter, r *http.Request, session *sessions.Session, router *Router) {
 	// If the user is reaching this page after being
 	// redirected due to a validation error, the errors
 	// be error messages stored in a flash message which
@@ -37,13 +38,13 @@ func loginPageHandler(w http.ResponseWriter, r *http.Request, session *sessions.
 	render(w, "login.html", data)
 }
 
-func loginActionHandler(w http.ResponseWriter, r *http.Request, session *sessions.Session, router *router) {
+func loginActionHandler(w http.ResponseWriter, r *http.Request, session *sessions.Session, router *Router) {
 
 	username, password, errs := validateLoginRequest(r)
 
 	if len(errs) == 0 {
 		// Get the user from the database
-		user, err := router.userDao.Get(username)
+		user, err := router.userDao.GetByUsername(username)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -51,11 +52,13 @@ func loginActionHandler(w http.ResponseWriter, r *http.Request, session *session
 
 		if user != nil && user.VerifyPassword(password) {
 			// Log the user in by saving their username as a session attribute
-			session.Values["username"] = user.Username
+			session.Values["userID"] = user.ID
 			if err := session.Save(r, w); err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
+
+			log.Debug("User has logged in", log.Fields{"username" : user.Username})
 
 			// Redirect the user to the dashboard
 			dashboardUrl := router.Dashboard()
