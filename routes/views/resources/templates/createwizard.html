@@ -12,8 +12,8 @@
 			<div>
 				<label for="name-field">Name: </label>
 				<input id="name-field" name="name" type="text" />
-				{{if .FieldErrors}}
-					{{with $nameErrors := index .FieldErrors "Name"}}
+				{{if .ValidationErrors}}
+					{{with $nameErrors := index .ValidationErrors "Name"}}
 						<ul id="name-errors">
 							{{range $index, $error := $nameErrors }}
 								<li> {{$error}} </li>
@@ -29,8 +29,8 @@
 					<option value="M">Male</option>
 					<option value="F">Female</option>
 				</select>
-				{{if .FieldErrors}}
-					{{with $sexErrors := index .FieldErrors "Sex"}}
+				{{if .ValidationErrors}}
+					{{with $sexErrors := index .ValidationErrors "Sex"}}
 						<ul id="sex-errors">
 							{{range $index, $error := $sexErrors }}
 								<li> {{$error}} </li>

@@ -32,7 +32,7 @@ func createWizardPageHandler(w http.ResponseWriter, r *http.Request, context *co
 
 	data := struct {
 		SubmitPath string
-		FieldErrors models.ValidationErrors
+		ValidationErrors models.ValidationErrors
 	}{
 		wizardCreationPath,
 		validationErrs,
