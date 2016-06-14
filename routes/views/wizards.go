@@ -55,7 +55,17 @@ func createWizardActionHandler(w http.ResponseWriter, r *http.Request, context *
 		return
 	} 
 
-	if validationErrs != nil {
+	if len(validationErrs) == 0 {
+		if err := router.wizardDao.Insert(wizard); err != nil {
+			log.Error("Error occurred while inserting wizard", log.Fields{"error" : err})
+			custom500Handler(w,r)
+			return
+		}
+
+		// Send the user back to the dasboard
+		dashboardUrl := router.Dashboard()
+		http.Redirect(w, r, dashboardUrl.String(), http.StatusSeeOther)
+	} else {
 		// Add the errors to a flash message so that we can access them
 		// after redirection
 		session.AddFlash(validationErrs, "errs")
@@ -67,16 +77,6 @@ func createWizardActionHandler(w http.ResponseWriter, r *http.Request, context *
 		// Send the user back to the creation page
 		wizardCreationUrl := router.WizardCreation()
 		http.Redirect(w, r, wizardCreationUrl.String(), http.StatusSeeOther)
-	} else {
-		if err := router.wizardDao.Insert(wizard); err != nil {
-			log.Error("Error occurred while inserting wizard", log.Fields{"error" : err})
-			custom500Handler(w,r)
-			return
-		}
-
-		// Send the user back to the dasboard
-		dashboardUrl := router.Dashboard()
-		http.Redirect(w, r, dashboardUrl.String(), http.StatusSeeOther)
 	}
 }
 

@@ -1,6 +1,7 @@
 package views
 
 import (
+	"github.com/crob1140/codewiz/models"
 	"github.com/crob1140/codewiz/models/users"
 	"net/http"
 )
@@ -16,6 +17,10 @@ func registerPageHandler(w http.ResponseWriter, r *http.Request, context *contex
 	// be error messages stored in a flash message which
 	// needs to be read and loaded into the context.
 	errList := session.Flashes("errs")
+	var validationErrs models.ValidationErrors
+	if len(errList) != 0 {
+		validationErrs = errList[0].(models.ValidationErrors)
+	}
 
 	// Save the session to ensure the flash messages are removed.
 	if err := session.Save(r, w); err != nil {
@@ -23,22 +28,13 @@ func registerPageHandler(w http.ResponseWriter, r *http.Request, context *contex
 		return
 	}
 
-	var errs map[string][]string
-	if len(errList) != 0 {
-		errs = errList[0].(map[string][]string)
-	} else {
-		// Make an empty map to save having to check for nil values
-		// in the template
-		errs = make(map[string][]string)
-	}
-
 	registerUrl := router.Registration()
 	data := struct {
 		SubmitPath  string
-		FieldErrors map[string][]string
+		ValidationErrors models.ValidationErrors
 	}{
 		registerUrl.String(), 
-		errs,
+		validationErrs,
 	}
 
 	render(w, "register.html", data)
@@ -49,9 +45,15 @@ func registerActionHandler(w http.ResponseWriter, r *http.Request, context *cont
 	router := context.Router
 	session := context.Session
 
-	user, errs := validateRegistrationRequest(r)
+	user := extractUserFromRegistrationRequest(r)
+	validator := users.NewValidator(router.userDao)
+	validationErrs, err := validator.Validate(user)
+	if err != nil {
+		custom500Handler(w,r)
+		return
+	}
 
-	if len(errs) == 0 {
+	if len(validationErrs) == 0 {
 		// Create a new User and store it in the database
 		if err := router.userDao.Insert(user); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -71,7 +73,7 @@ func registerActionHandler(w http.ResponseWriter, r *http.Request, context *cont
 	} else {
 		// Add the errors to a flash message so that we can access them
 		// after redirection
-		session.AddFlash(errs, "errs")
+		session.AddFlash(validationErrs, "errs")
 		if err := session.Save(r, w); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -83,29 +85,9 @@ func registerActionHandler(w http.ResponseWriter, r *http.Request, context *cont
 	}
 }
 
-func validateRegistrationRequest(r *http.Request) (*users.User, map[string][]string) {
-	errs := make(map[string][]string)
-
+func extractUserFromRegistrationRequest(r *http.Request) *users.User {
 	username := r.FormValue("username")
-	if username == "" {
-		errs["username"] = append(errs["username"], "Username must be provided.")
-	}
-
 	password := r.FormValue("password")
-	if password == "" {
-		errs["password"] = append(errs["password"], "Password must be provided.")
-	}
-
 	email := r.FormValue("email")
-	if email == "" {
-		errs["email"] = append(errs["email"], "Email must be provided.")
-	}
-
-	if len(errs) != 0 {
-		return nil, errs
-	}
-
-	user := users.NewUser(username, password, email)
-	return user, errs
+	return users.NewUser(username, password, email)
 }
-

@@ -18,26 +18,30 @@
 			<div>
 				<label for="username-field">Username: </label>
 				<input id="username-field" name="username" type="text" />
-				{{with $usernameErrors := index .FieldErrors "username"}}
-					{{if $usernameErrors }}
-						<ul id="username-errors">
-							{{range $index, $error := $usernameErrors }}
-								<li> {{$error}} </li>
-							{{end}}
-						</ul>
+				{{if .ValidationErrors}}
+					{{with $usernameErrors := index .ValidationErrors "Username"}}
+						{{if $usernameErrors }}
+							<ul id="username-errors">
+								{{range $index, $error := $usernameErrors }}
+									<li> {{$error}} </li>
+								{{end}}
+							</ul>
+						{{end}}
 					{{end}}
 				{{end}}
 			</div>
 			<div>
 				<label for="password-field">Password: </label>
 				<input id="password-field" name="password" type="password" />
-				{{with $passwordErrors := index .FieldErrors "password"}}
-					{{if $passwordErrors }}
-						<ul id="password-errors">
-							{{range $index, $error := $passwordErrors }}
-								<li> {{$error}} </li>
-							{{end}}
-						</ul>
+				{{if .ValidationErrors}}
+					{{with $passwordErrors := index .ValidationErrors "Password"}}
+						{{if $passwordErrors }}
+							<ul id="password-errors">
+								{{range $index, $error := $passwordErrors }}
+									<li> {{$error}} </li>
+								{{end}}
+							</ul>
+						{{end}}
 					{{end}}
 				{{end}}
 				<input type="button"></input> <!-- TODO: change to an eye glyphicon -->
@@ -45,13 +49,15 @@
 			<div>
 				<label for="email-field">Email: </label>
 				<input id="email-field" name="email" type="email" />
-				{{with $emailErrors := index .FieldErrors "email"}}
-					{{if $emailErrors }}
-						<ul id="email-errors">
-							{{range $index, $error := $emailErrors }}
-								<li> {{$error}} </li>
-							{{end}}
-						</ul>
+				{{if .ValidationErrors}}
+					{{with $emailErrors := index .ValidationErrors "Email"}}
+						{{if $emailErrors }}
+							<ul id="email-errors">
+								{{range $index, $error := $emailErrors }}
+									<li> {{$error}} </li>
+								{{end}}
+							</ul>
+						{{end}}
 					{{end}}
 				{{end}}
 			</div>
