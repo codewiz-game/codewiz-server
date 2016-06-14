@@ -2,22 +2,24 @@ package views
 
 import (
 	"github.com/crob1140/codewiz/log"
+	"github.com/crob1140/codewiz/models"
 	"github.com/crob1140/codewiz/models/wizards"
-	"github.com/gorilla/sessions"
 	"net/http"
 )
 
-func listWizardsPageHandler(w http.ResponseWriter, r *http.Request, session *sessions.Session, router *Router) {
+func listWizardsPageHandler(w http.ResponseWriter, r *http.Request, context *context) {
 
 }
 
-func createWizardPageHandler(w http.ResponseWriter, r *http.Request, session *sessions.Session, router *Router) {
+func createWizardPageHandler(w http.ResponseWriter, r *http.Request, context *context) {
+
+	router := context.Router
+	session := context.Session
 
 	errList := session.Flashes("errs")
-	var errs *validationErrors
+	var validationErrs models.ValidationErrors
 	if len(errList) != 0 {
-		validationErrs := errList[0].(validationErrors)
-		errs = &validationErrs
+		validationErrs = errList[0].(models.ValidationErrors)
 	}
 
 	// Save the session to ensure the flash messages are removed.
@@ -26,28 +28,37 @@ func createWizardPageHandler(w http.ResponseWriter, r *http.Request, session *se
 		return
 	}
 
+	wizardCreationPath := router.WizardCreation().String()
+
 	data := struct {
 		SubmitPath string
-		Errors *validationErrors
+		FieldErrors models.ValidationErrors
 	}{
-		router.WizardCreation().String(),
-		errs,
+		wizardCreationPath,
+		validationErrs,
 	}
 
 	render(w, "createwizard.html", data)
 }
 
-func createWizardActionHandler(w http.ResponseWriter, r *http.Request, session *sessions.Session, router *Router) {
+func createWizardActionHandler(w http.ResponseWriter, r *http.Request, context *context) {
 	
-	user, err := getUserForSession(session, router.userDao)
+	user := context.User
+	router := context.Router
+	session := context.Session
+
+	wizard := extractWizardFromRequest(r, user.ID)
+	validator := wizards.NewValidator(router.wizardDao)
+	validationErrs, err := validator.Validate(wizard)
 	if err != nil {
 		custom500Handler(w,r)
-		return;
-	}
+		return
+	} 
 
-	wizard, errs := validateWizardCreationRequest(r)
-	if errs != nil {
-		session.AddFlash(*errs, "errs")
+	if validationErrs != nil {
+		// Add the errors to a flash message so that we can access them
+		// after redirection
+		session.AddFlash(validationErrs, "errs")
 		if err := session.Save(r, w); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -57,7 +68,6 @@ func createWizardActionHandler(w http.ResponseWriter, r *http.Request, session *
 		wizardCreationUrl := router.WizardCreation()
 		http.Redirect(w, r, wizardCreationUrl.String(), http.StatusSeeOther)
 	} else {
-		wizard.OwnerID = user.ID
 		if err := router.wizardDao.Insert(wizard); err != nil {
 			log.Error("Error occurred while inserting wizard", log.Fields{"error" : err})
 			custom500Handler(w,r)
@@ -70,32 +80,16 @@ func createWizardActionHandler(w http.ResponseWriter, r *http.Request, session *
 	}
 }
 
-func validateWizardCreationRequest(r *http.Request) (*wizards.Wizard, *validationErrors) {
-
-	fieldErrs := make(map[string][]string)
-	
+func extractWizardFromRequest(r *http.Request, userID uint64) *wizards.Wizard {
 	name := r.FormValue("name")
-	if name == "" {
-		fieldErrs["name"] = append(fieldErrs["name"], "Name must be provided.")
-	}
-
 	sex := r.FormValue("sex")
-	if !(sex == "M" || sex == "F") {
-		fieldErrs["sex"] = append(fieldErrs["sex"], "Sex must be either male or female.")
-	}
+	return wizards.NewWizard(name, sex, userID)
+}
 
-	if len(fieldErrs) != 0 {
-		return nil, newValidationErrors(nil, fieldErrs)
-	}
-
-	return wizards.NewWizard(name, sex, 0), nil
+func viewWizardPageHandler(w http.ResponseWriter, r *http.Request, context *context) {
 
 }
 
-func viewWizardPageHandler(w http.ResponseWriter, r *http.Request, session *sessions.Session, router *Router) {
-
-}
-
-func modifyWizardActionHandler(w http.ResponseWriter, r *http.Request, session *sessions.Session, router *Router) {
+func modifyWizardActionHandler(w http.ResponseWriter, r *http.Request, context *context) {
 
 }

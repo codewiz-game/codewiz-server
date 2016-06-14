@@ -1,13 +1,16 @@
 package views
 
 import (
-	"github.com/gorilla/sessions"
 	"github.com/crob1140/codewiz/models/users"
 	"net/http"
 )
 
 
-func registerPageHandler(w http.ResponseWriter, r *http.Request, session *sessions.Session, router *Router) {
+func registerPageHandler(w http.ResponseWriter, r *http.Request, context *context) {
+	
+	router := context.Router
+	session := context.Session
+
 	// If the user is reaching this page after being
 	// redirected due to a validation error, the errors
 	// be error messages stored in a flash message which
@@ -41,7 +44,10 @@ func registerPageHandler(w http.ResponseWriter, r *http.Request, session *sessio
 	render(w, "register.html", data)
 }
 
-func registerActionHandler(w http.ResponseWriter, r *http.Request, session *sessions.Session, router *Router) {
+func registerActionHandler(w http.ResponseWriter, r *http.Request, context *context) {
+
+	router := context.Router
+	session := context.Session
 
 	user, errs := validateRegistrationRequest(r)
 

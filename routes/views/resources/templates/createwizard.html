@@ -12,15 +12,13 @@
 			<div>
 				<label for="name-field">Name: </label>
 				<input id="name-field" name="name" type="text" />
-				{{if .Errors}}
-					{{if .Errors.FieldErrors}}
-						{{with $nameErrors := index .Errors.FieldErrors "name"}}
-							<ul id="name-errors">
-								{{range $index, $error := $nameErrors }}
-									<li> {{$error}} </li>
-								{{end}}
-							<ul>
-						{{end}}
+				{{if .FieldErrors}}
+					{{with $nameErrors := index .FieldErrors "Name"}}
+						<ul id="name-errors">
+							{{range $index, $error := $nameErrors }}
+								<li> {{$error}} </li>
+							{{end}}
+						<ul>
 					{{end}}
 				{{end}}
 			</div>
@@ -31,18 +29,14 @@
 					<option value="M">Male</option>
 					<option value="F">Female</option>
 				</select>
-				{{if .Errors}}
-					{{if .Errors.FieldErrors}}
-						{{with $sexErrors := index .Errors.FieldErrors "sex"}}
-							{{if $sexErrors }}
-								<ul id="sex-errors">
-									{{range $index, $error := $sexErrors }}
-										<li> {{$error}} </li>
-									{{end}}
-								<ul>
+				{{if .FieldErrors}}
+					{{with $sexErrors := index .FieldErrors "Sex"}}
+						<ul id="sex-errors">
+							{{range $index, $error := $sexErrors }}
+								<li> {{$error}} </li>
 							{{end}}
-						{{end}}
-					{{end}}
+						<ul>
+					{{end}}	
 				{{end}}
 			</div>
 

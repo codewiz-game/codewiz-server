@@ -2,12 +2,16 @@ package views
 
 import (
 	"github.com/crob1140/codewiz/log"
-	"github.com/gorilla/sessions"
 	"net/http"
 )
 
 
-func loginPageHandler(w http.ResponseWriter, r *http.Request, session *sessions.Session, router *Router) {
+func loginPageHandler(w http.ResponseWriter, r *http.Request, context *context) {
+
+	router := context.Router
+	session := context.Session
+
+
 	// If the user is reaching this page after being
 	// redirected due to a validation error, the errors
 	// be error messages stored in a flash message which
@@ -38,7 +42,10 @@ func loginPageHandler(w http.ResponseWriter, r *http.Request, session *sessions.
 	render(w, "login.html", data)
 }
 
-func loginActionHandler(w http.ResponseWriter, r *http.Request, session *sessions.Session, router *Router) {
+func loginActionHandler(w http.ResponseWriter, r *http.Request, context *context) {
+
+	router := context.Router
+	session := context.Session
 
 	username, password, errs := validateLoginRequest(r)
 

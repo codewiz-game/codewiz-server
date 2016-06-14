@@ -1,25 +1,17 @@
 package views
 
 import (
+	"github.com/crob1140/codewiz/models"
 	"encoding/gob"
 	"net/http"
 )
 
 type custom404Handler struct{}
 
-type validationErrors struct {
-	FormErrors []string
-	FieldErrors map[string][]string
-}
-
-
 func init() {
-	// Register the validation errors type to allow them to be encoded to the session cookie.
-	gob.Register(validationErrors{})
-}
-
-func newValidationErrors(formErrors []string, fieldErrors map[string][]string) *validationErrors {
-	return &validationErrors{FormErrors : formErrors, FieldErrors : fieldErrors}
+	// Register the field errors type to allow them to be 
+	// encoded as flash messages in the session cookie.
+	gob.Register(make(models.ValidationErrors))
 }
 
 // 404 is a special-case error, since the handler function cannot be called from a handler.

@@ -71,36 +71,40 @@ func initRoutes(router *Router) {
 
 	// Add dashboard page
 	dashboardPath := router.path
-	dashboardRoute := router.Path(dashboardPath).Handler(newHandler(dashboardPageHandler, router)).Methods("GET")
+	dashboardRoute := router.addHandler("GET", dashboardPath, dashboardPageHandler, false)
 	router.dashboardURL, _ = dashboardRoute.URL()
 
 	// Add registration page
 	registrationPath := path.Join(router.path, "/register")
-	registrationRoute := router.Path(registrationPath).Handler(newHandler(registerPageHandler, router)).Methods("GET")
+	registrationRoute := router.addHandler("GET", registrationPath, registerPageHandler, false)
 	router.registrationURL, _ = registrationRoute.URL()
-	router.Path(registrationPath).Handler(newHandler(registerActionHandler, router)).Methods("POST")
+	router.addHandler("POST", registrationPath, registerActionHandler, false)
 
 	// Add login page
 	loginPath := path.Join(router.path, "/login")
-	loginRoute := router.Path(loginPath).Handler(newHandler(loginPageHandler, router)).Methods("GET")
+	loginRoute := router.addHandler("GET", loginPath, loginPageHandler, false)
 	router.loginURL, _ = loginRoute.URL() 
-	router.Path(loginPath).Handler(newHandler(loginActionHandler, router)).Methods("POST")
+	router.addHandler("POST", loginPath, loginActionHandler, false)
 
 	// Add wizard list page
 	wizardListPath := path.Join(router.path, "/wizards")
-	wizardListRoute := router.Path(wizardListPath).Handler(newHandler(listWizardsPageHandler, router)).Methods("GET")
+	wizardListRoute := router.addHandler("GET", wizardListPath, listWizardsPageHandler, true)
 	router.wizardListURL, _ = wizardListRoute.URL()
 
 	// Add wizard creation page
 	wizardCreationPath := path.Join(router.path, "/wizards/create")
-	wizardCreationRoute := router.Path(wizardCreationPath).Handler(newHandler(createWizardPageHandler, router)).Methods("GET")
+	wizardCreationRoute := router.addHandler("GET", wizardCreationPath, createWizardPageHandler, true)
 	router.wizardCreationURL, _ = wizardCreationRoute.URL()
-	router.Path(wizardCreationPath).Handler(newHandler(createWizardActionHandler, router)).Methods("POST")
+	router.addHandler("POST", wizardCreationPath, createWizardActionHandler, true)
 
 	// Add wizard view/update page
 	wizardViewPath := path.Join(router.path, "/wizards/{id}")
-	router.wizardViewRoute = router.Path(wizardViewPath).Handler(newHandler(viewWizardPageHandler, router)).Methods("GET")
-	router.Path(wizardViewPath).Handler(newHandler(modifyWizardActionHandler, router)).Methods("POST")
+	router.wizardViewRoute = router.addHandler("GET", wizardViewPath, viewWizardPageHandler, true)
+	router.addHandler("POST", wizardViewPath, modifyWizardActionHandler, true)
+}
+
+func (router *Router) addHandler(method string, path string, handlerFunc handlerFunc, requiresLogin bool) *mux.Route {
+	return router.Path(path).Handler(newHandler(handlerFunc, router, requiresLogin)).Methods(method)
 }
 
 func (router *Router) Dashboard() *url.URL {

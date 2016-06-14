@@ -15,11 +15,17 @@ func NewDao(db *datastore.DB) *Dao {
 
 func (dao *Dao) GetByID(id uint64) (*User, error) {
 	user, err := dao.DB.Get(User{}, "SELECT * FROM Users WHERE ID = ?", id)
+	if err != nil || user == nil {
+		return nil, err
+	}
 	return user.(*User), err
 }
 
 func (dao *Dao) GetByUsername(username string) (*User, error) {
 	user, err := dao.DB.Get(User{}, "SELECT * FROM Users WHERE Username = ?", username)
+	if err != nil || user == nil {
+		return nil, err
+	}
 	return user.(*User), err
 }
 
