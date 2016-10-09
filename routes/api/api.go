@@ -4,16 +4,17 @@ import (
 	"path"
 	"net/http"
 	"github.com/gorilla/mux"
+	"github.com/crob1140/codewiz/models/users"
 	"github.com/crob1140/codewiz/routes/api/v1"
 )
 
-func NewRouter(apiPath string) http.Handler {
+func NewRouter(apiPath string, userDao *users.Dao) http.Handler {
 
 	router := mux.NewRouter()
 
 	// Add version one
 	v1Path := path.Join(apiPath, "/v1")
-	v1Router := v1.NewRouter(v1Path)
+	v1Router := v1.NewRouter(v1Path, userDao)
 	router.PathPrefix(v1Path).Handler(v1Router)
 	
 	// ----------------------------------------------------------------
@@ -25,7 +26,7 @@ func NewRouter(apiPath string) http.Handler {
 	// ----------------------------------------------------------------
 
 	latestVersionPath := path.Join(apiPath, "/latest")
-	latestVersionRouter := v1.NewRouter(latestVersionPath)
+	latestVersionRouter := v1.NewRouter(latestVersionPath, userDao)
 	router.PathPrefix(latestVersionPath).Handler(latestVersionRouter)
 
 	return router

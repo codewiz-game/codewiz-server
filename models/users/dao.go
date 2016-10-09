@@ -38,5 +38,6 @@ func (dao *Dao) Delete(user *User) error {
 }
 
 func (dao *Dao) Insert(user *User) error {
-	return dao.DB.Insert(user)
-}
+	err := dao.DB.Insert(user)
+	return err
+}	

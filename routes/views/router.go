@@ -19,7 +19,6 @@ const (
 
 type Router struct {
 	*mux.Router
-
 	path         string
 	sessionStore sessions.Store
 

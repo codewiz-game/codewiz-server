@@ -43,7 +43,7 @@ func NewLogger() *Logger {
 
 	// TODO: these should be args
 	logger.Formatter = &logrus.JSONFormatter{}
-	logger.Level = logrus.PanicLevel
+	logger.Level = logrus.InfoLevel
 	return &Logger{logger}
 }
 

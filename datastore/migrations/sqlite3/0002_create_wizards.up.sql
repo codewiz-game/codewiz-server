@@ -1,0 +1,14 @@
+CREATE TABLE IF NOT EXISTS Wizards (
+	ID INTEGER PRIMARY KEY,
+	CreationTime DATETIME,
+	LastUpdatedTime DATETIME,
+	DeletionTime DATETIME,
+	Status INTEGER,
+	OwnerID INTEGER NOT NULL,
+	Name VARCHAR(128) NOT NULL,
+	Sex CHAR(1)	NOT NULL,
+	CONSTRAINT uk_WizardsOwnerIDAndName UNIQUE (OwnerID,Name),
+	FOREIGN KEY (OwnerID) REFERENCES Users(ID)
+);
+
+CREATE INDEX ix_WizardsOwnerID ON Wizards(OwnerID);

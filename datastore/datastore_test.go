@@ -29,6 +29,8 @@ func (result *testResult) RowsAffected() (int64, error) {
 
 func TestDB_Insert_SucceedsOnValidRecord(t *testing.T) {
 	ds, err := initTestDataStore()
+	defer closeTestDatastore(ds)
+	
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -53,6 +55,10 @@ func TestDB_Insert_SucceedsOnValidRecord(t *testing.T) {
 		t.Fatalf("Last modifed time did not update")
 	}
 
+	if record.ID == 0 {
+		t.Fatalf("ID has not been set.")
+	}
+
 	// Select the record that was just inserted from the DB,
 	// and then assert that all of the fields inserted correctly.
 	inserted := &testRecord{}
@@ -62,11 +68,12 @@ func TestDB_Insert_SucceedsOnValidRecord(t *testing.T) {
 	}
 
 	assertEquals(record, inserted, t)
-	closeTestDatastore(ds)
 }
 
 func TestDB_Insert_FailsOnInvalidRecord(t *testing.T) {
 	ds, err := initTestDataStore()
+	defer closeTestDatastore(ds)
+	
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -83,12 +90,12 @@ func TestDB_Insert_FailsOnInvalidRecord(t *testing.T) {
 	if !record.CreationTime().IsZero() || !record.LastUpdatedTime().IsZero() {
 		t.Fatalf("Creation and/or last modified times did not roll back")
 	}
-
-	closeTestDatastore(ds)
 }
 
 func TestDB_Insert_FailsOnSameRecord(t *testing.T) {
 	ds, err := initTestDataStore()
+	defer closeTestDatastore(ds)
+
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -124,12 +131,12 @@ func TestDB_Insert_FailsOnSameRecord(t *testing.T) {
 	}
 
 	assertEquals(record, inserted, t)
-
-	closeTestDatastore(ds)
 }
 
 func TestDB_Insert_FailsOnExistingPrimaryKey(t *testing.T) {
 	ds, err := initTestDataStore()
+	defer closeTestDatastore(ds)
+
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -165,12 +172,12 @@ func TestDB_Insert_FailsOnExistingPrimaryKey(t *testing.T) {
 	}
 
 	assertEquals(record, inserted, t)
-
-	closeTestDatastore(ds)
 }
 
 func TestDB_Insert_PreviouslyDeletedRecord(t *testing.T) {
 	ds, err := initTestDataStore()
+	defer closeTestDatastore(ds)
+
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -196,12 +203,12 @@ func TestDB_Insert_PreviouslyDeletedRecord(t *testing.T) {
 	}
 
 	assertEquals(record, inserted, t)
-
-	closeTestDatastore(ds)
 }
 
 func TestDB_Update_SucceedsOnValidRecord(t *testing.T) {
 	ds, err := initTestDataStore()
+	defer closeTestDatastore(ds)
+	
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -237,12 +244,12 @@ func TestDB_Update_SucceedsOnValidRecord(t *testing.T) {
 	}
 
 	assertEquals(*record, *updated, t)
-
-	closeTestDatastore(ds)
 }
 
 func TestDB_Update_FailsOnInvalidRecord(t *testing.T) {
 	ds, err := initTestDataStore()
+	defer closeTestDatastore(ds)
+
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -269,12 +276,12 @@ func TestDB_Update_FailsOnInvalidRecord(t *testing.T) {
 	if !(record.LastUpdatedTime() == previousUpdateTime && record.LastUpdatedTime() == record.CreationTime()) {
 		t.Fatalf("Did not expect last modified time to be updated")
 	}
-
-	closeTestDatastore(ds)
 }
 
 func TestDB_Update_FailsOnMissingRecord(t *testing.T) {
 	ds, err := initTestDataStore()
+	defer closeTestDatastore(ds)
+
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -294,12 +301,12 @@ func TestDB_Update_FailsOnMissingRecord(t *testing.T) {
 	if !record.LastUpdatedTime().IsZero() {
 		t.Fatalf("Did not expect last modified time to be set")
 	}
-
-	closeTestDatastore(ds)
 }
 
 func TestDB_Delete_SucceedsOnExistingRecord(t *testing.T) {
 	ds, err := initTestDataStore()
+	defer closeTestDatastore(ds)
+
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -338,12 +345,12 @@ func TestDB_Delete_SucceedsOnExistingRecord(t *testing.T) {
 	}
 
 	assertEquals(*record, *deleted, t)
-
-	closeTestDatastore(ds)
 }
 
 func TestDB_Delete_FailsOnMissingRecord(t *testing.T) {
 	ds, err := initTestDataStore()
+	defer closeTestDatastore(ds)
+
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -366,12 +373,12 @@ func TestDB_Delete_FailsOnMissingRecord(t *testing.T) {
 	if record.Status() != Transient {
 		t.Fatalf("Did not expect status field to be updated")
 	}
-
-	closeTestDatastore(ds)
 }
 
 func TestDB_Get_IgnoresLogicallyDeletedRecords(t *testing.T) {
 	ds, err := initTestDataStore()
+	defer closeTestDatastore(ds)
+
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -402,12 +409,12 @@ func TestDB_Get_IgnoresLogicallyDeletedRecords(t *testing.T) {
 	if insertedDeleted != nil {
 		t.Fatalf("No result should be returned when querying for a deleted record")
 	}
-
-	closeTestDatastore(ds)
 }
 
 func TestDB_Get_MoreThanOneResult(t *testing.T) {
 	ds, err := initTestDataStore()
+	defer closeTestDatastore(ds)
+
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -425,12 +432,10 @@ func TestDB_Get_MoreThanOneResult(t *testing.T) {
 	if result != nil || err == nil {
 		t.Fatalf("Expected an error to be thrown with no returned result")
 	}
-
-	closeTestDatastore(ds)
 }
 
 func initTestDataStore() (*DB, error) {
-	ds, err := Open("sqlite3", ":memory:")
+	ds, err := Open("sqlite3", "file:test.db?cache=shared&mode=memory")
 	if err != nil {
 		return nil, err
 	}
@@ -446,10 +451,6 @@ func initTestDataStore() (*DB, error) {
 		IntegerField INTEGER
 		CHECK (IntegerField > 0)
 	);`)
-
-	if err != nil {
-		return nil, err
-	}
 
 	ds.AddTableWithName(testRecord{}, "Test")
 	return ds, nil

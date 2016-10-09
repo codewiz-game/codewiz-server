@@ -4,8 +4,9 @@ import (
 	"log"
 	"path"
 	"net/http"
-	"github.com/gorilla/mux"
+	"github.com/crob1140/codewiz/routes"
 )
+
 
 type Spell struct {
 	URI string `json:"uri"`
@@ -16,29 +17,29 @@ type Wizard struct {
 	Spells []Spell `json:"spells"`
 }
 
-func addWizardRoutes(router *mux.Router, v1Path string) {
-	wizardsPath := path.Join(v1Path, "/wizards")
+func addWizardRoutes(router *routes.Router) {
+	wizardsPath := "/wizards"
 
-	router.HandleFunc(wizardsPath, getAllWizardsHandler).Methods("GET")
-	router.HandleFunc(wizardsPath, addWizardHandler).Methods("POST")
+	router.Path(wizardsPath).HandlerFunc(getAllWizardsHandler).Methods("GET")
+	router.Path(wizardsPath).HandlerFunc(addWizardHandler).Methods("POST")
 
-	router.HandleFunc(path.Join(wizardsPath, "/{id}"), getWizardHandler).Methods("GET")
-	router.HandleFunc(path.Join(wizardsPath, "/{id}"), modifyWizardHandler).Methods("POST")
+	router.Path(path.Join(wizardsPath, "/{id}")).HandlerFunc(getWizardHandler).Methods("GET")
+	router.Path(path.Join(wizardsPath, "/{id}")).HandlerFunc(modifyWizardHandler).Methods("POST")
 }
 
-func getAllWizardsHandler(w http.ResponseWriter, r *http.Request) {
+func getAllWizardsHandler(w http.ResponseWriter, r *http.Request, context *routes.Context) {
 	log.Printf("Get all wizards v1")
 }
 
 
-func addWizardHandler(w http.ResponseWriter, r *http.Request) {
+func addWizardHandler(w http.ResponseWriter, r *http.Request, context *routes.Context) {
 	log.Printf("Add wizard v1")
 }
 
-func getWizardHandler(w http.ResponseWriter, r *http.Request) {
+func getWizardHandler(w http.ResponseWriter, r *http.Request, context *routes.Context) {
 	log.Printf("Get wizard v1")
 }
 
-func modifyWizardHandler(w http.ResponseWriter, r *http.Request) {
+func modifyWizardHandler(w http.ResponseWriter, r *http.Request, context *routes.Context) {
 	log.Printf("Modify wizard v1")
 }

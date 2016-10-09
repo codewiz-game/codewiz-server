@@ -9,6 +9,7 @@ import (
 	"github.com/mattes/migrate/migrate"
 	"reflect"
 	"time"
+	"path/filepath"
 )
 
 type StatusCode uint
@@ -18,7 +19,6 @@ const (
 	Active
 	Deleted
 
-	migrationScriptsPath = "./datastore/migrations"
 )
 
 type DB struct {
@@ -33,13 +33,19 @@ func Open(driver string, dsn string) (*DB, error) {
 		return nil, err
 	}
 
+	// Check that the connection is valid before continuing
+	err = db.Ping()
+	if err != nil {
+		return nil, err
+	}
+
 	gorpDialect := getDialectForDriver(driver)
 	dbMap := &gorp.DbMap{Db: db, Dialect: gorpDialect}
 	return &DB{DbMap: dbMap, driver: driver, dsn: dsn}, nil
 }
 
-func (ds *DB) UpSync() ([]error, bool) {
-	return migrate.UpSync(ds.driver+"://"+ds.dsn, migrationScriptsPath)
+func (ds *DB) UpSync(migrationsPath string) ([]error, bool) {
+	return migrate.UpSync(ds.driver+"://"+ds.dsn, filepath.Join(migrationsPath, ds.driver))
 }
 
 func (ds *DB) Insert(record interface{}) error {

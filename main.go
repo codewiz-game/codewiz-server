@@ -22,6 +22,9 @@ func main() {
 	port := config.GetString(keys.Port)
 	assertConfigExists(keys.Port, port)
 
+	migrationsPath := config.GetString(keys.DatabaseMigrationsPath)
+	assertConfigExists(keys.DatabaseMigrationsPath, migrationsPath)	
+
 	log.Debug("Opening database connection", log.Fields{"driver" : dbDriver, "dsn" : dbDSN})
 	ds, err := datastore.Open(dbDriver, dbDSN)
 	if err != nil {
@@ -30,7 +33,7 @@ func main() {
 		})
 	}
 
-	errs, ok := ds.UpSync()
+	errs, ok := ds.UpSync(migrationsPath)
 	if !ok {
 		for _, err := range errs {
 			log.Fatal("Failed to synchronise datastore tables", log.Fields{
@@ -48,14 +51,15 @@ func main() {
 }
 
 func initLogger() {
-	logLevel := config.GetString(keys.LogLevel)
+	levelString := config.GetString(keys.LogLevel)
 	level := log.InfoLevel
-	if logLevel != "" {
-		var err error
-		if level, err = log.ParseLevel(logLevel); err != nil {
+	if levelString != "" {
+		if parsedLevel, err := log.ParseLevel(levelString); err != nil {
 			log.Error("Unrecognised log level", log.Fields{
-				"level" : logLevel,
+				"level" : levelString,
 			})
+		} else {
+			level = parsedLevel
 		}
 	}
 

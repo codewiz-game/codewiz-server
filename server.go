@@ -26,7 +26,7 @@ func NewServer(db *datastore.DB) *Server {
 	router := mux.NewRouter()
 
 	// Add API endpoints
-	apiRouter := api.NewRouter(apiPath)
+	apiRouter := api.NewRouter(apiPath, userDao)
 	router.PathPrefix(apiPath).Handler(apiRouter)
 
 	// Add view endpoints
