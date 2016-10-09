@@ -4,7 +4,7 @@ import (
 	"log"
 	"path"
 	"net/http"
-	"github.com/crob1140/codewiz/routes"
+	"github.com/crob1140/codewiz-server/routes"
 )
 
 

@@ -1,7 +1,7 @@
 package users
 
 import (
-	"github.com/crob1140/codewiz/datastore"
+	"github.com/crob1140/codewiz-server/datastore"
 )
 
 type Dao struct {

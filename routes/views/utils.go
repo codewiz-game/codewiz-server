@@ -1,7 +1,7 @@
 package views
 
 import (
-	"github.com/crob1140/codewiz/log"
+	"github.com/crob1140/codewiz-server/log"
 	"html/template"
 	"net/http"
 	"path/filepath"

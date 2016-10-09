@@ -4,8 +4,8 @@ import (
 	"path"
 	"net/http"
 	"github.com/gorilla/mux"
-	"github.com/crob1140/codewiz/models/users"
-	"github.com/crob1140/codewiz/routes/api/v1"
+	"github.com/crob1140/codewiz-server/models/users"
+	"github.com/crob1140/codewiz-server/routes/api/v1"
 )
 
 func NewRouter(apiPath string, userDao *users.Dao) http.Handler {

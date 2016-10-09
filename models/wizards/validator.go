@@ -1,7 +1,7 @@
 package wizards
 
 import (
-	"github.com/crob1140/codewiz/models"
+	"github.com/crob1140/codewiz-server/models"
 )
 
 type Validator struct {

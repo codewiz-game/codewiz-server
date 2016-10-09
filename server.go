@@ -1,11 +1,11 @@
 package main
 
 import (
-	"github.com/crob1140/codewiz/datastore"
-	"github.com/crob1140/codewiz/models/users"
-	"github.com/crob1140/codewiz/models/wizards"
-	"github.com/crob1140/codewiz/routes/api"
-	"github.com/crob1140/codewiz/routes/views"
+	"github.com/crob1140/codewiz-server/datastore"
+	"github.com/crob1140/codewiz-server/models/users"
+	"github.com/crob1140/codewiz-server/models/wizards"
+	"github.com/crob1140/codewiz-server/routes/api"
+	"github.com/crob1140/codewiz-server/routes/views"
 	"github.com/gorilla/mux"
 	"net/http"
 )

@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"encoding/json"
 	"runtime/debug"
-	"github.com/crob1140/codewiz/log"
-	"github.com/crob1140/codewiz/routes"
-	"github.com/crob1140/codewiz/models/users"
+	"github.com/crob1140/codewiz-server/log"
+	"github.com/crob1140/codewiz-server/routes"
+	"github.com/crob1140/codewiz-server/models/users"
 )
 
 const (

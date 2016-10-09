@@ -1,7 +1,7 @@
 package views
 
 import (
-	"github.com/crob1140/codewiz/models"
+	"github.com/crob1140/codewiz-server/models"
 	"encoding/gob"
 	"net/http"
 )

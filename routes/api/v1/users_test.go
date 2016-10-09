@@ -8,11 +8,11 @@ import (
 	"net/http"
     "encoding/base64"
 	"net/http/httptest"
-    "github.com/crob1140/codewiz/config"
-    "github.com/crob1140/codewiz/config/keys"
-    "github.com/crob1140/codewiz/datastore"
-    "github.com/crob1140/codewiz/models/users"
-    "github.com/crob1140/codewiz/routes"
+    "github.com/crob1140/codewiz-server/config"
+    "github.com/crob1140/codewiz-server/config/keys"
+    "github.com/crob1140/codewiz-server/datastore"
+    "github.com/crob1140/codewiz-server/models/users"
+    "github.com/crob1140/codewiz-server/routes"
     _ "github.com/mattn/go-sqlite3"
 )
 

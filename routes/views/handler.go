@@ -1,7 +1,7 @@
 package views
 
 import (
-	"github.com/crob1140/codewiz/models/users"
+	"github.com/crob1140/codewiz-server/models/users"
 	"github.com/gorilla/sessions"
 	"net/http"
 )

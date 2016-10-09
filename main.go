@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/crob1140/codewiz/log"
-	"github.com/crob1140/codewiz/config"
-	"github.com/crob1140/codewiz/config/keys"
-	"github.com/crob1140/codewiz/datastore"
+	"github.com/crob1140/codewiz-server/log"
+	"github.com/crob1140/codewiz-server/config"
+	"github.com/crob1140/codewiz-server/config/keys"
+	"github.com/crob1140/codewiz-server/datastore"
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/mattn/go-sqlite3"
 )

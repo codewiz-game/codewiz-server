@@ -1,7 +1,7 @@
 package views
 
 import (
-	"github.com/crob1140/codewiz/models/wizards"
+	"github.com/crob1140/codewiz-server/models/wizards"
 	"net/http"
 )
 

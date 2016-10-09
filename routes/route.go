@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"github.com/crob1140/codewiz/models/users"
+	"github.com/crob1140/codewiz-server/models/users"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
 	"net/http"
